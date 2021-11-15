@@ -1,3 +1,4 @@
+use colored::Colorize;
 use std::env;
 
 fn help(version_number: String) {
@@ -15,7 +16,7 @@ fn help(version_number: String) {
 fn unknown_option(arg: &String) {
     // Print the "unknown option" message and exit
 
-    println!("Error: unknown option: {}. Try coral --help for more info.", arg);
+    println!("{} unknown option: {}. Try coral --help for more info.", format!("Error:").red(), arg);
 }
 
 fn main() {
