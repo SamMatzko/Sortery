@@ -6,6 +6,7 @@ fn help(version_number: String) {
     println!("Coral {}\n", version_number);
     println!("Coral is a free, open-source file and directory sorter written");
     println!("in Rust.\n");
+    println!("usage: [SOURCE DIR] [TARGET DIR] [-h, --help]\n");
     println!("Command-line options:\n");
     print!("-h, --help\t");
     println!("Show this message and quit.");
@@ -24,13 +25,13 @@ fn main() {
         String::from("-h"),
         String::from("--help")
     ];
-    let version_number = "0.0.0";
+    let version_number = "0.0.1";
 
     // The command-line arguments
     let args: Vec<String> = env::args().collect();
     let args = &args[1..];
 
-    println!("{:?}", args);
+    // println!("{:?}", args);
 
     // If there are no arguments, show the help message
     if args.len() == 0 {
