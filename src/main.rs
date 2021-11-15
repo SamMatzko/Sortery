@@ -1,5 +1,19 @@
 use colored::Colorize;
 use std::env;
+use std::path::Path;
+
+fn check_exists(path: &Path) -> bool {
+    // Check if the given path actually exists, and print an error if it doesn't
+
+    if !path.exists() {
+        println!(
+            "{0} \"{1}\": no such file or directory. Try coral --help for more info.",
+            format!("Error:").red(),
+            path.display()
+        );
+    }
+    path.exists()
+}
 
 fn help(version_number: String) {
     // Display the help messages and exit
@@ -41,10 +55,27 @@ fn main() {
     }
     
     // Check all arguments for validity
+    let mut paths_exist = true;
     for option in args {
-        if !options.contains(option) {
-            unknown_option(option);
+
+        // Fist check the options (those starting with "-" or "--")
+        if option.starts_with("-") || option.starts_with("--") {
+            if !options.contains(option) {
+                unknown_option(option);
+            }
+
+        // Then check the path arguments (those starting with anything else)
+        } else {
+            let path = Path::new(option);
+            if !check_exists(&path) {
+                paths_exist = false;
+            }
         }
+    }
+
+    // End the execution if any of the paths were invalid
+    if !paths_exist {
+        return;
     }
     
     if args.contains(&options[0]) || args.contains(&options[1]) {
