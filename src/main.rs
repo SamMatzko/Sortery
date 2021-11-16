@@ -1,21 +1,8 @@
+mod messages;
 mod tools;
 
-use colored::Colorize;
-use std::env;
-use std::path::Path;
-
-fn check_exists(path: &Path) -> bool {
-    // Check if the given path actually exists, and print an error if it doesn't
-
-    if !path.exists() {
-        println!(
-            "{0} \"{1}\": no such file or directory. Try coral --help for more info.",
-            format!("Error:").red(),
-            path.display()
-        );
-    }
-    path.exists()
-}
+use messages::error_messages;
+use std::{env};
 
 fn help(version_number: String) {
     // Display the help messages and exit
@@ -27,12 +14,6 @@ fn help(version_number: String) {
     println!("Command-line options:\n");
     print!("-h, --help\t");
     println!("Show this message and quit.");
-}
-
-fn unknown_option(arg: &String) {
-    // Print the "unknown option" message and exit
-
-    println!("{} unknown option: {}. Try coral --help for more info.", format!("Error:").red(), arg);
 }
 
 fn main() {
@@ -57,30 +38,17 @@ fn main() {
     }
     
     // Check all arguments for validity
-    let mut paths_exist = true;
     for option in args {
 
         // Fist check the options (those starting with "-" or "--")
         if option.starts_with("-") || option.starts_with("--") {
             if !options.contains(option) {
-                unknown_option(option);
-            }
-
-        // Then check the path arguments (those starting with anything else)
-        } else {
-            let path = Path::new(option);
-            if !check_exists(&path) {
-                paths_exist = false;
+                error_messages::UnknownOptionError { option: option.to_string() }.show();
             }
         }
     }
-
-    // End the execution if any of the paths were invalid
-    if !paths_exist {
-        return;
-    }
-    
     if args.contains(&options[0]) || args.contains(&options[1]) {
+        // -h --help: Show the help message
         help((&version_number).to_string());
     }
 }
