@@ -1,3 +1,5 @@
+mod tools;
+
 use colored::Colorize;
 use std::env;
 use std::path::Path;
