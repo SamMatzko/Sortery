@@ -1,11 +1,12 @@
 use std::path::Path;
 
+// Commmand-line tools
 pub mod command_line {
-    // Parse the data from the command line
 
-    use super::super::messages::{info_messages};
+    use super::super::messages::{error_messages, info_messages};
     use std::path::Path;
 
+    // Parses the command-line options
     pub struct CommandLineParser {
         pub args: Vec<String>,
     }
@@ -15,6 +16,9 @@ pub mod command_line {
             // any input errors encountered during parsing, and return True if the
             // parse failed
 
+            // ParseResult configuration options
+            let mut errors = false;
+
             // The available options
             let options = [
                 String::from("-h"),
@@ -22,22 +26,34 @@ pub mod command_line {
             ];
 
             // Exit if there are not enough arguments
-            if self.args.len() <3 {
+            if self.args.len() <4 {
                 info_messages::help();
                 return ParseResult { errors: true, help: false};
             }
             
             // Verify the paths
-            let source = Path::new(&self.args[0]);
-            let target = Path::new(&self.args[1]);
+            let source = Path::new(&self.args[1]);
+            let target = Path::new(&self.args[2]);
+
+            // Raise errors if the paths don't exist
+            if !source.exists() {
+                error_messages::PathDoesNotExistError { path: source }.show();
+                errors = true;
+            }
+            if !target.exists() {
+                error_messages::PathDoesNotExistError { path: target }.show();
+                errors = true;
+            }
             
             // Verify the arguments
-            for arg in &self.args {
-                println!("{}", arg);
+            for arg in &self.args[3..] {
+                if !options.contains(arg) {
+                    error_messages::UnknownOptionError { option: arg.to_string() }.show();
+                }
             }
 
             // Return the parse result
-            ParseResult { errors: false, help: false }
+            ParseResult { errors: errors, help: false }
         }
     }
 

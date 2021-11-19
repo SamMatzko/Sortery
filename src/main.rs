@@ -1,7 +1,6 @@
 mod messages;
 mod tools;
 
-use messages::error_messages;
 use std::{env};
 use tools::command_line::CommandLineParser;
 
