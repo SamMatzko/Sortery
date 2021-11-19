@@ -11,6 +11,18 @@ pub mod command_line {
         pub args: Vec<String>,
     }
     impl CommandLineParser {
+        
+        fn is_help_only(&self, args: &Vec<String>) -> bool {
+            // Return true if the only command-line option was --help or -h
+
+            if args.len() == 2 &&
+            (args[1] == String::from("-h") || args[1] == String::from("--help"))
+            {
+                return true;
+            } else { return false; }
+
+        }
+
         pub fn parse(&self) -> ParseResult {
             // Parse the arguments, and save the relevant options. Show messages for
             // any input errors encountered during parsing, and return True if the
@@ -18,6 +30,7 @@ pub mod command_line {
 
             // ParseResult configuration options
             let mut errors = 0;
+            let mut help = false;
 
             // The available options
             let options = [
@@ -25,13 +38,32 @@ pub mod command_line {
                 String::from("--help")
             ];
 
-            // Exit if there are not enough arguments
-            if self.args.len() <4 {
+            // Check first if the user inputted for help
+            if self.args.contains(&options[0]) || self.args.contains(&options[1]) {
+                help = true;
+            }
+
+            // Show an error if there are not enough args, and --help isn't specified
+            if self.args.len() <4 && !self.is_help_only(&self.args) {
                 error_messages::NotEnoughArgsError {
                     len: self.args.len() - 1
                 }.show();
                 errors += 1;
-                return ParseResult { errors: errors, help: false};
+                return ParseResult {
+                    errors: errors,
+                    help: help,
+                    source: Path::new("<none>"),
+                    target: Path::new("<none>"),
+                };
+            // If there were not enough args, but --help was specified, show
+            // the help message.
+            } else if self.is_help_only(&self.args) {
+                return ParseResult {
+                    errors: errors,
+                    help: help,
+                    source: Path::new("<none>"),
+                    target: Path::new("<none>"),
+                };
             }
             
             // Verify the paths
@@ -59,14 +91,21 @@ pub mod command_line {
             }
 
             // Return the parse result
-            ParseResult { errors: errors, help: false }
+            ParseResult {
+                errors: errors,
+                help: help,
+                source: source,
+                target: target,
+            }
         }
     }
 
     // The results of the parsing
-    pub struct ParseResult {
+    pub struct ParseResult <'a> {
         pub errors: i32,
         pub help: bool,
+        pub source: &'a Path,
+        pub target: &'a Path,
     }
 }
 
