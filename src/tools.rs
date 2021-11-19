@@ -3,7 +3,7 @@ use std::path::Path;
 // Commmand-line tools
 pub mod command_line {
 
-    use super::super::messages::{error_messages, info_messages};
+    use super::super::messages::error_messages;
     use std::path::Path;
 
     // Parses the command-line options
@@ -17,7 +17,7 @@ pub mod command_line {
             // parse failed
 
             // ParseResult configuration options
-            let mut errors = false;
+            let mut errors = 0;
 
             // The available options
             let options = [
@@ -27,8 +27,11 @@ pub mod command_line {
 
             // Exit if there are not enough arguments
             if self.args.len() <4 {
-                info_messages::help();
-                return ParseResult { errors: true, help: false};
+                error_messages::NotEnoughArgsError {
+                    len: self.args.len() - 1
+                }.show();
+                errors += 1;
+                return ParseResult { errors: errors, help: false};
             }
             
             // Verify the paths
@@ -38,17 +41,20 @@ pub mod command_line {
             // Raise errors if the paths don't exist
             if !source.exists() {
                 error_messages::PathDoesNotExistError { path: source }.show();
-                errors = true;
+                errors += 1;
             }
             if !target.exists() {
                 error_messages::PathDoesNotExistError { path: target }.show();
-                errors = true;
+                errors += 1;
             }
             
             // Verify the arguments
             for arg in &self.args[3..] {
                 if !options.contains(arg) {
-                    error_messages::UnknownOptionError { option: arg.to_string() }.show();
+                    error_messages::UnknownOptionError {
+                        option: arg.to_string()
+                    }.show();
+                    errors += 1;
                 }
             }
 
@@ -59,8 +65,8 @@ pub mod command_line {
 
     // The results of the parsing
     pub struct ParseResult {
-        errors: bool,
-        help: bool,
+        pub errors: i32,
+        pub help: bool,
     }
 }
 

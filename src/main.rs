@@ -1,6 +1,7 @@
 mod messages;
 mod tools;
 
+use messages::info_messages;
 use std::{env};
 use tools::command_line::CommandLineParser;
 
@@ -12,4 +13,17 @@ fn main() {
     // Parse the arguments
     let parser = CommandLineParser { args };
     let result = parser.parse();
+    
+    // Print overall error information
+    if result.errors >= 1 {
+        println!("Failed to execute command: {} errors found.", result.errors);
+        return
+    }
+
+    // Run according to the command-line options
+    
+    if result.help {
+        info_messages::help();
+        return
+    }
 }

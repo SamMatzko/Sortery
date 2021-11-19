@@ -4,6 +4,22 @@ pub mod error_messages {
     use colored::Colorize;
     use std::path::Path;
 
+    // When the user does not input enough arguments
+    pub struct NotEnoughArgsError {
+        pub len: usize,
+    }
+    impl NotEnoughArgsError {
+        pub fn show(&self) {
+            // Print the error message
+
+            println!(
+                "{} expected at least 3 arguments, got {}. Try coral --help for more info.",
+                format!("Error:").red(),
+                self.len.to_string()
+            );
+        }
+    }
+
     // When the user inputs a file or directory that doesn't exist
     pub struct PathDoesNotExistError <'a> {
         pub path: &'a Path,
@@ -16,7 +32,7 @@ pub mod error_messages {
                 "{} no such file or directory \"{}\". Try coral --help for more info.",
                 format!("Error:").red(),
                 self.path.display()
-            )
+            );
         }
     }
 
