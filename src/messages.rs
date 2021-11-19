@@ -5,10 +5,10 @@ pub mod error_messages {
     use std::path::Path;
 
     // When the user inputs a file or directory that doesn't exist
-    pub struct PathDoesNotExistError {
-        pub path: Path,
+    pub struct PathDoesNotExistError <'a> {
+        pub path: &'a Path,
     }
-    impl PathDoesNotExistError {
+    impl <'a> PathDoesNotExistError <'a> {
         pub fn show(&self) {
             // Print the error message
 
