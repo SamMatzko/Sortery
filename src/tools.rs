@@ -1,4 +1,6 @@
-use std::path::Path;
+use std::io;
+use std::io::Write;
+use std::{fs, path::Path, time::Duration, thread::sleep};
 
 // Commmand-line tools
 pub mod command_line {
@@ -30,12 +32,15 @@ pub mod command_line {
 
             // ParseResult configuration options
             let mut errors = 0;
+            let mut extract = false;
             let mut help = false;
 
             // The available options
             let options = [
                 String::from("-h"),
-                String::from("--help")
+                String::from("--help"),
+                String::from("-e"),
+                String::from("--extract"),
             ];
 
             // Check first if the user inputted for help
@@ -52,6 +57,7 @@ pub mod command_line {
                 return ParseResult {
                     errors: errors,
                     help: help,
+                    extract: extract,
                     source: Path::new("<none>"),
                     target: Path::new("<none>"),
                 };
@@ -61,6 +67,7 @@ pub mod command_line {
                 return ParseResult {
                     errors: errors,
                     help: help,
+                    extract: extract,
                     source: Path::new("<none>"),
                     target: Path::new("<none>"),
                 };
@@ -89,10 +96,18 @@ pub mod command_line {
                     errors += 1;
                 }
             }
+            
+            // Set the command options based on the command-line options
+
+            // Exctract: -e, --extract
+            if self.args.contains(&options[2]) || self.args.contains(&options[3]) {
+                extract = true;
+            }
 
             // Return the parse result
             ParseResult {
                 errors: errors,
+                extract: extract,
                 help: help,
                 source: source,
                 target: target,
@@ -103,13 +118,29 @@ pub mod command_line {
     // The results of the parsing
     pub struct ParseResult <'a> {
         pub errors: i32,
+        pub extract: bool,
         pub help: bool,
         pub source: &'a Path,
         pub target: &'a Path,
     }
 }
 
-pub fn extract(source: &Path, target: &Path) {
+pub fn extract(source: &Path, target: &Path) -> io::Result<()> {
     // Extract the contents of SOURCE to TARGET
-    println!("Extracting contents of {} to {}", source.display(), target.display());
+    // println!("Extracting contents of {} to {}.", source.display(), target.display());
+    // for p in 0..100 {
+    //     print!("Completed {0} {1}%...\r", "⌷".repeat(p), p);
+    //     io::stdout().flush().expect("Failed to flush stdout.");
+    //     sleep(Duration::from_millis(100));
+    // }
+
+    // Move each entry (file or directory) in the directory
+    for entry in source.read_dir()? {
+
+        // The entry path
+        let entry = entry?;
+        let path = entry.path();
+        println!("{}", path.display());
+    }
+    Ok(())
 }
