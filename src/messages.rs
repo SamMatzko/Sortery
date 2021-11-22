@@ -63,9 +63,18 @@ pub mod info_messages {
         println!("Coral {}\n", version_number);
         println!("Coral is a free, open-source file and directory sorter written");
         println!("in Rust.\n");
-        println!("usage: [SOURCE DIR] [TARGET DIR] [-h, --help]\n");
+        println!("\tusage: [SOURCE DIR] [TARGET DIR] [-h, --help] <args>\n");
         println!("Command-line options:\n");
-        print!("-h, --help\t");
+        
+        // The command-line options
+        
+        // Extract
+        print!("\t-e, --extract\t");
+        println!("Extract all the contents of SOURCE to TARGET.");
+
+        // Help
+        print!("\t-h, --help\t");
         println!("Show this message and quit.");
+
     }    
 }
