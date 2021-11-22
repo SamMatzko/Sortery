@@ -9,10 +9,10 @@ pub mod error_messages {
         pub len: usize,
     }
     impl NotEnoughArgsError {
-        pub fn show(&self) {
-            // Print the error message
+        pub fn to_string(&self) -> String {
+            // Return the error message as a string
 
-            println!(
+            return format!(
                 "{} expected at least 3 arguments, got {}. Try coral --help for more info.",
                 format!("Error:").red(),
                 self.len.to_string()
@@ -25,10 +25,10 @@ pub mod error_messages {
         pub path: &'a Path,
     }
     impl <'a> PathDoesNotExistError <'a> {
-        pub fn show(&self) {
-            // Print the error message
+        pub fn to_string(&self) -> String {
+            // Return the error message as a string
 
-            println!(
+            return format!(
                 "{} no such file or directory \"{}\". Try coral --help for more info.",
                 format!("Error:").red(),
                 self.path.display()
@@ -41,14 +41,32 @@ pub mod error_messages {
         pub option: String,
     }
     impl UnknownOptionError {
-        pub fn show(&self) {
-            // Print the error message
+        pub fn to_string(&self) -> String {
+            // Return the error message as a string
 
-            println!(
+            return format!(
                 "{} unknown option \"{}\". Try coral --help for more info.",
                 format!("Error:").red(),
                 self.option
             )
+        }
+    }
+
+    // When an attempt to move a path fails
+    pub struct PathMoveFailedError <'a> {
+        pub source: &'a Path,
+        pub target: &'a Path,
+    }
+    impl <'a> PathMoveFailedError <'a> {
+        pub fn to_string(&self) -> String {
+            // Return the error message as a string
+
+            return format!(
+                "{} failed to move {} to {}.",
+                    format!("Error:").red(),
+                    self.source.display(),
+                    self.target.display(),
+                )
         }
     }
 }
