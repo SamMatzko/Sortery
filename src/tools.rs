@@ -125,7 +125,7 @@ pub mod command_line {
     }
 }
 
-pub fn extract(source: &Path, target: &Path) -> io::Result<()> {
+pub fn extract(source: &Path, target: &Path) {
     // Extract the contents of SOURCE to TARGET
     // println!("Extracting contents of {} to {}.", source.display(), target.display());
     // for p in 0..100 {
@@ -135,12 +135,11 @@ pub fn extract(source: &Path, target: &Path) -> io::Result<()> {
     // }
 
     // Move each entry (file or directory) in the directory
-    for entry in source.read_dir()? {
+    for entry in source.read_dir().expect("Failed to read dir.") {
 
         // The entry path
-        let entry = entry?;
+        let entry = entry.expect("Failed to get dir entry.");
         let path = entry.path();
         println!("{}", path.display());
     }
-    Ok(())
 }
