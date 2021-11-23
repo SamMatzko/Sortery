@@ -1,6 +1,7 @@
+use super::messages::error_messages;
 use std::io;
 use std::io::Write;
-use std::{fs, path::Path, time::Duration, thread::sleep};
+use std::{fs, path::Path};
 
 // Commmand-line tools
 pub mod command_line {
@@ -50,9 +51,9 @@ pub mod command_line {
 
             // Show an error if there are not enough args, and --help isn't specified
             if self.args.len() <4 && !self.is_help_only(&self.args) {
-                error_messages::NotEnoughArgsError {
+                println!("{}", error_messages::NotEnoughArgsError {
                     len: self.args.len() - 1
-                }.show();
+                }.to_string());
                 errors += 1;
                 return ParseResult {
                     errors: errors,
@@ -79,20 +80,20 @@ pub mod command_line {
 
             // Raise errors if the paths don't exist
             if !source.exists() {
-                error_messages::PathDoesNotExistError { path: source }.show();
+                println!("{}", error_messages::PathDoesNotExistError { path: source }.to_string());
                 errors += 1;
             }
             if !target.exists() {
-                error_messages::PathDoesNotExistError { path: target }.show();
+                println!("{}", error_messages::PathDoesNotExistError { path: target }.to_string());
                 errors += 1;
             }
             
             // Verify the arguments
             for arg in &self.args[3..] {
                 if !options.contains(arg) {
-                    error_messages::UnknownOptionError {
+                    println!("{}", error_messages::UnknownOptionError {
                         option: arg.to_string()
-                    }.show();
+                    }.to_string());
                     errors += 1;
                 }
             }
@@ -127,19 +128,63 @@ pub mod command_line {
 
 pub fn extract(source: &Path, target: &Path) {
     // Extract the contents of SOURCE to TARGET
-    // println!("Extracting contents of {} to {}.", source.display(), target.display());
-    // for p in 0..100 {
-    //     print!("Completed {0} {1}%...\r", "⌷".repeat(p), p);
-    //     io::stdout().flush().expect("Failed to flush stdout.");
-    //     sleep(Duration::from_millis(100));
-    // }
+
+    // The number of items we have moved
+    let mut items_moved = 0;
+
+    // Count the number of items we are going to move
+    let mut items_to_move = 0;
+    for entry in source.read_dir().expect("Failed to read dir") {
+
+        // The entry path
+        let entry = entry.expect("Failed to get dir entry.");
+        let old_path = entry.path();
+
+        // Make sure that the path being moved is not the source or target
+        if old_path == source || old_path == target { continue }
+
+        items_to_move += 1;
+    }
 
     // Move each entry (file or directory) in the directory
     for entry in source.read_dir().expect("Failed to read dir.") {
 
         // The entry path
         let entry = entry.expect("Failed to get dir entry.");
-        let path = entry.path();
-        println!("{}", path.display());
+        let old_path = entry.path();
+        
+        // Calculate the new path for the entry
+        let new_path = target.join(old_path.file_name().unwrap());
+
+        // Make sure that the path being moved is not the source or target
+        if old_path == source || old_path == target { continue }
+
+        // Move the path
+        // println!("Moving {} to {}...", &old_path.display(), &new_path.display());
+        fs::rename(old_path.display().to_string(), new_path.display().to_string())
+            .expect(
+                &error_messages::PathMoveFailedError {
+                    source: &old_path,
+                    target: &new_path,
+                }.to_string()
+            );
+        
+        // Add to the count of items moved
+        items_moved += 1;
+
+        // Show the progress
+        print!(
+            "Extracting |{0}{1}| {2}% {3}/{4}\r",
+            "⌷".repeat((20/items_to_move)*items_moved),
+            "-".repeat(20-((20/items_to_move)*items_moved)),
+            (100/items_to_move)*items_moved,
+            items_moved,
+            items_to_move
+        );
+        io::stdout().flush().expect("Failed to flush stdout.");
+        // sleep(Duration::from_millis(300));
     }
+    // Show success status
+    println!("Completed. |{}| 100% {}/{}", "⌷".repeat(20), items_moved, items_to_move);
+    println!("Successfully moved {} items to {}.", items_moved, target.display());
 }
