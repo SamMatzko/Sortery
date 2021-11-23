@@ -76,7 +76,7 @@ pub mod info_messages {
     pub fn help() {
         // Display the help messages and exit
 
-        let version_number = String::from("0.0.2");
+        let version_number = String::from("0.1.2");
     
         println!("Coral {}\n", version_number);
         println!("Coral is a free, open-source file and directory sorter written");
