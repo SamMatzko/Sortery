@@ -29,5 +29,7 @@ fn main() {
     // Run according to the command-line options
     if result.extract {
         tools::extract(result.source, result.target);
+    } else if result.sort {
+        tools::sort::by_date(result.source, result.target);
     }
 }
