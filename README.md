@@ -9,3 +9,18 @@ license. See `GPL-license_v3.txt` for full terms and information.
 
 To install Coral, simply run `install.sh` from any directory, and Coral will be installed in that directory. If you move the Coral
 directory, you will have to install it again.
+
+<h2>Requirements/Dependencies</h2>
+<ul>
+  <li>
+    <a href="https://github.com/rust-lang/cargo">Cargo</a>
+  </li>
+</ul>
+
+<h2>Version</h2>
+
+0.1.2
+
+<h2>License</h2>
+
+[GNU GPLv3](https://github.com/SamMatzko/Coral/blob/master/GPL-license_v3.txt)
