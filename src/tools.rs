@@ -1,4 +1,4 @@
-use super::messages::error_messages;
+use super::messages::{error_messages, ProgressBar};
 use std::io;
 use std::io::Write;
 use std::{fs, path::Path};
@@ -34,6 +34,7 @@ pub mod command_line {
             // ParseResult configuration options
             let mut errors = 0;
             let mut extract = false;
+            let mut sort = false;
             let mut help = false;
 
             // The available options
@@ -42,6 +43,8 @@ pub mod command_line {
                 String::from("--help"),
                 String::from("-e"),
                 String::from("--extract"),
+                String::from("-s"),
+                String::from("--sort"),
             ];
 
             // Check first if the user inputted for help
@@ -59,6 +62,7 @@ pub mod command_line {
                     errors: errors,
                     help: help,
                     extract: extract,
+                    sort: sort,
                     source: Path::new("<none>"),
                     target: Path::new("<none>"),
                 };
@@ -69,6 +73,7 @@ pub mod command_line {
                     errors: errors,
                     help: help,
                     extract: extract,
+                    sort: sort,
                     source: Path::new("<none>"),
                     target: Path::new("<none>"),
                 };
@@ -104,11 +109,16 @@ pub mod command_line {
             if self.args.contains(&options[2]) || self.args.contains(&options[3]) {
                 extract = true;
             }
+            // Sort: -s, --sort
+            if self.args.contains(&options[4]) || self.args.contains(&options[5]) {
+                sort = true;
+            }
 
             // Return the parse result
             ParseResult {
                 errors: errors,
                 extract: extract,
+                sort: sort,
                 help: help,
                 source: source,
                 target: target,
@@ -120,9 +130,50 @@ pub mod command_line {
     pub struct ParseResult <'a> {
         pub errors: i32,
         pub extract: bool,
+        pub sort: bool,
         pub help: bool,
         pub source: &'a Path,
         pub target: &'a Path,
+    }
+}
+
+// Various sorting algorithms
+pub mod sort {
+
+    use super::super::messages::error_messages;
+    use std::{path::Path};
+    use walkdir::WalkDir;
+    
+    pub fn by_date(source: &Path, target: &Path) {
+        // Sort all the files in SOURCE (including in all subdirs) by date into TARGET.
+        // For now, this only works if SOURCE and TARGET are both outside each other.
+        // Does not sort directories
+
+        // The number of items we have sorted
+        let mut items_sorted = 0;
+
+        // Count the number of items we are going to sort
+        let mut items_to_sort = 0;
+        for entry in WalkDir::new(source.display().to_string()) {
+
+            let entry = entry.unwrap();
+            if !entry.metadata().expect("Failed to get dir metadata").is_dir() {
+                items_to_sort += 1;
+            }
+        }
+        
+        // Sort the everything, excluding the directories
+        for entry in WalkDir::new(source.display().to_string()) {
+            
+            let entry = entry.unwrap();
+            if !entry.metadata().expect("Failed to get dir metadata").is_dir() {
+
+                // The Path instance we are sorting
+                let path = entry.path();
+
+                println!("Sorting {}", path.display());
+            }
+        }
     }
 }
 
@@ -146,13 +197,20 @@ pub fn extract(source: &Path, target: &Path) {
         items_to_move += 1;
     }
 
+    // The progress bar
+    let progress_bar = ProgressBar {
+        completed_message: String::from("Completed."),
+        message: String::from("Extracting..."),
+        total: items_to_move,
+    };
+
     // Move each entry (file or directory) in the directory
     for entry in source.read_dir().expect("Failed to read dir.") {
 
         // The entry path
         let entry = entry.expect("Failed to get dir entry.");
         let old_path = entry.path();
-        
+
         // Calculate the new path for the entry
         let new_path = target.join(old_path.file_name().unwrap());
 
@@ -173,18 +231,9 @@ pub fn extract(source: &Path, target: &Path) {
         items_moved += 1;
 
         // Show the progress
-        print!(
-            "Extracting |{0}{1}| {2}% {3}/{4}\r",
-            "⌷".repeat((20/items_to_move)*items_moved),
-            "-".repeat(20-((20/items_to_move)*items_moved)),
-            (100/items_to_move)*items_moved,
-            items_moved,
-            items_to_move
-        );
-        io::stdout().flush().expect("Failed to flush stdout.");
-        // sleep(Duration::from_millis(300));
+        progress_bar.set_progress(items_moved);
     }
     // Show success status
-    println!("Completed. |{}| 100% {}/{}", "⌷".repeat(20), items_moved, items_to_move);
+    progress_bar.complete();
     println!("Successfully moved {} items to {}.", items_moved, target.display());
 }

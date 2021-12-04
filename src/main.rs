@@ -2,7 +2,7 @@ mod messages;
 mod tools;
 
 use messages::info_messages;
-use std::{env};
+use std::env;
 use tools::command_line::CommandLineParser;
 
 fn main() {
