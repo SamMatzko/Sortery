@@ -17,6 +17,10 @@ directory, you will have to install it again.
   </li>
 </ul>
 
+<h2>What you can do</h2>
+
+I don't have ready access to a Windows or a Mac, and I don't use either one, so anyone who's willing to contribute to install scripts for those two OSs is encouraged to do so. I would like Coral to be available to as many people as possible. Right now, the install script works only on Linux.
+
 <h2>Version</h2>
 
 0.1.2
