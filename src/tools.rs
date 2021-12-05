@@ -1,6 +1,4 @@
 use super::messages::{error_messages, ProgressBar};
-use std::io;
-use std::io::Write;
 use std::{fs, path::Path};
 
 // Commmand-line tools
@@ -140,7 +138,7 @@ pub mod command_line {
 // Various sorting algorithms
 pub mod sort {
 
-    use super::super::messages::error_messages;
+    // use super::super::messages::error_messages;
     use std::{path::Path};
     use walkdir::WalkDir;
     
