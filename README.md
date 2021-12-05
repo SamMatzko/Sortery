@@ -34,7 +34,7 @@ I don't have ready access to a Windows or a Mac, and I don't use either one, so 
 
 <h2>License</h2>
 
-[GNU GPLv3](https://github.com/SamMatzko/Coral/blob/master/GPL-license_v3.txt)
+[MIT](https://github.com/SamMatzko/Coral/blob/master/LICENSE-MIT.txt)
 
 <h1>Usage</h1>
 
