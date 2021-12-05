@@ -1,35 +1,48 @@
 mod messages;
 mod tools;
 
-use messages::info_messages;
-use std::env;
-use tools::command_line::CommandLineParser;
+use clap::{Arg, App};
+use std::path::Path;
 
 fn main() {
 
-    // The command-line arguments
-    let args: Vec<String> = env::args().collect();
+    // Some of the text used in the app creation
+    let about = "Coral is a basic file and directory sorter.";
+    let extract_help = "Move all files and directories from SOURCE to TARGET";
 
-    // Parse the arguments
-    let parser = CommandLineParser { args };
-    let result = parser.parse();
+    // Get the command-line arguments using clap::App
+    let matches = App::new("Coral")
+                        .version("0.1.3")
+                        .author("Samuel Matzko")
+                        .about(about)
+                        .arg(Arg::with_name("SOURCE")
+                            .help("The source directory")
+                            .required(true)
+                            .index(1))
+                        .arg(Arg::with_name("TARGET")
+                            .help("The target directory.")
+                            .required(true)
+                            .index(2))
+                        .arg(Arg::with_name("extract")
+                            .short("e")
+                            .long("extract")
+                            .help(extract_help))
+                        .arg(Arg::with_name("by-date")
+                            .long("by-date")
+                            .help("Sort all files from SOURCE into TARGET by date"))
+                        .get_matches();
+    /*
+    Run everything according to the command-line arguments
+    */
 
-    // Show the help message if the user specified to
-    if result.help {
-        info_messages::help();
-        return;
-    }
+    // The source and target directories
+    let source = Path::new(matches.value_of("SOURCE").unwrap());
+    let target = Path::new(matches.value_of("TARGET").unwrap());
     
-    // Print overall error information
-    if result.errors >= 1 {
-        println!("Failed to execute command: {} errors found.", result.errors);
-        return;
-    }
-
-    // Run according to the command-line options
-    if result.extract {
-        tools::extract(result.source, result.target);
-    } else if result.sort {
-        tools::sort::by_date(result.source, result.target);
+    // Run the commands
+    if matches.is_present("extract") {
+        tools::extract(source, target);
+    } else if matches.is_present("by-date") {
+        tools::sort::by_date(source, target);
     }
 }
