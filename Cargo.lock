@@ -56,7 +56,7 @@ dependencies = [
 
 [[package]]
 name = "coral"
-version = "0.1.3"
+version = "0.2.3"
 dependencies = [
  "clap",
  "colored",
