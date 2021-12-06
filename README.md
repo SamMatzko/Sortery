@@ -27,7 +27,7 @@ I don't have ready access to a Windows or a Mac, and I don't use either one, so 
 
 <h2>Version</h2>
 
-0.2.5
+0.2.6
 
 <h2>License</h2>
 
