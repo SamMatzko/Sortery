@@ -37,7 +37,7 @@ fn main() {
     */
 
     // The variable telling whether we need to exit because of an error
-    let exit_for_error = true;
+    let exit_for_error = false;
 
     // The source and target directories
     let source = Path::new(matches.value_of("SOURCE").unwrap());
@@ -59,6 +59,7 @@ fn main() {
     if matches.is_present("extract") {
         tools::extract(source, target);
     } else if matches.is_present("by-date") {
+        println!("Sorting by date");
         tools::sort::by_date(source, target);
     }
 }
