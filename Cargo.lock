@@ -55,15 +55,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "coral"
-version = "0.2.3"
-dependencies = [
- "clap",
- "colored",
- "walkdir",
-]
-
-[[package]]
 name = "hermit-abi"
 version = "0.1.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -91,6 +82,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "93fc1dc3aaa9bfed95e02e6eadabb4baf7e3078b0bd1b4d7b6b0b68378900502"
 dependencies = [
  "winapi-util",
+]
+
+[[package]]
+name = "sortery"
+version = "0.2.3"
+dependencies = [
+ "clap",
+ "colored",
+ "walkdir",
 ]
 
 [[package]]

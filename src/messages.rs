@@ -54,7 +54,7 @@ pub mod error_messages {
             // Return the error message as a string
 
             return format!(
-                "{} no such file or directory \"{}\". Try coral --help for more info.",
+                "{} no such file or directory \"{}\". Try sortery --help for more info.",
                 format!("Error:").red(),
                 self.path.display()
             );
