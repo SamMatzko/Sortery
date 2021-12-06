@@ -27,7 +27,7 @@ I don't have ready access to a Windows or a Mac, and I don't use either one, so 
 
 <h2>Version</h2>
 
-0.1.2
+0.2.3
 
 <h2>License</h2>
 
@@ -45,22 +45,4 @@ is a simple example that moves all the contents of one directory to another dire
 sortery /home/user/my_dir1 /home/user/my_dir2 --extract
 ```
 
-In this case, Sortery gets all its files and directories from `/home/user/my_dir1`, and moves them into `/home/user/my_dir2`.
-
-<h2>Commands-line Arguments</h2>
-
-How to order the command-line arguments when using Sortery:
-
-```
-sortery [SOURCE] [TARGET] [--help] <args>
-```
-
-Below is a table showing all the command-line arguments available for Sortery, and how they can be used. These arguments replace `<args>` in the example above.
-
-| Usage | Argument        | What it does           |
-| ----- | --------------- | ---------------------- |
-|   #   | -e, --extract   | Extracts all the files and dirs from `SOURCE` into `TARGET`. |
-|   *   | -h, --help      | Show the help message. |
-
-The `Usage` column shows how the specific argument can be used. Arguments that can be passed with any other arguments without affecting them are marked with a `*`. Arguments that can only be run by themselves and/or with their specific sub-arguments are marked with a `#`. Sub-arguments, arguments that can only be passed
-if a certain "parent argument" is passed as well, are marked with a `&` and the short version of their "parent argument". For example, a sub-argument of the `-e` command would have `&-e` in its `Usage` column.
+In this case, Sortery gets all its files and directories from `/home/user/my_dir1`, and moves them into `/home/user/my_dir2`. You can see the [Sortery Wiki](https://github.com/SamMatzko/Sortery/wiki) for full documentation on the command-line arguments and usage.
