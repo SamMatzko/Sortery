@@ -25,6 +25,10 @@ Now you're ready to start sorting!
 
 I don't have ready access to a Windows or a Mac, and I don't use either one, so anyone who's willing to contribute to install scripts for those two OSs is encouraged to do so. I would like Sortery to be available to as many people as possible. Right now, the install script works only on Linux.
 
+<h2>Version</h2>
+
+0.2.5
+
 <h2>License</h2>
 
 [MIT](https://github.com/SamMatzko/Sortery/blob/master/LICENSE-MIT.txt)
