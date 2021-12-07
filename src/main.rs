@@ -8,7 +8,7 @@ use std::path::Path;
 fn main() {
 
     // Some of the text used in the app creation
-    let about = "Sortery is a basic file and directory sorter.";
+    let about = "Sortery is a basic file sorter.";
     let extract_help = "Move all files and directories from SOURCE to TARGET";
 
     // Get the command-line arguments using clap::App
