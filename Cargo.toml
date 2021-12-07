@@ -7,5 +7,6 @@ edition = "2018"
 
 [dependencies]
 clap = "2.34.0"
+chrono = "0.4.19"
 colored = "2.0.0"
 walkdir = "2"

@@ -5,8 +5,20 @@ use std::{fs, path::Path};
 pub mod sort {
 
     // use super::super::messages::error_messages;
-    use std::{path::Path};
+    use chrono::{DateTime, TimeZone, Utc, Local};
+    use std::{path::Path, time::UNIX_EPOCH};
     use walkdir::WalkDir;
+
+    fn get_creation_datetime(path: &Path) -> DateTime<Local> {
+        // Return the DateTime instance representing the creation time of PATH
+        // in the local time zone.
+        let ctime_system = path.metadata().unwrap().created().expect("Failed to get mtime");
+        let secs: i64 = ctime_system.duration_since(UNIX_EPOCH).unwrap().as_secs() as i64;
+        let ctime = Utc.timestamp(secs, 0);
+        let mytime = Local.from_utc_datetime(&ctime.naive_utc());
+
+        mytime
+    }
     
     pub fn by_date(source: &Path, target: &Path) {
         // Sort all the files in SOURCE (including in all subdirs) by date into TARGET.
@@ -34,8 +46,9 @@ pub mod sort {
 
                 // The Path instance we are sorting
                 let path = entry.path();
-
-                println!("Sorting {}", path.display());
+                
+                // The creation date and time
+                println!("{} was created at {}.", path.display(), get_creation_datetime(&path));
             }
         }
     }
