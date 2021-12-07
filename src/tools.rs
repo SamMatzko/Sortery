@@ -12,12 +12,20 @@ pub mod sort {
     fn get_creation_datetime(path: &Path) -> DateTime<Local> {
         // Return the DateTime instance representing the creation time of PATH
         // in the local time zone.
-        let ctime_system = path.metadata().unwrap().created().expect("Failed to get mtime");
-        let secs: i64 = ctime_system.duration_since(UNIX_EPOCH).unwrap().as_secs() as i64;
+        let secs = get_creation_epoch_secs(path);
         let ctime = Utc.timestamp(secs, 0);
         let mytime = Local.from_utc_datetime(&ctime.naive_utc());
 
         mytime
+    }
+
+    fn get_creation_epoch_secs(path: &Path) -> i64 {
+        // Return the creation date and time as the number of seconds since the
+        // UNIX epoch.
+        let ctime_system = path.metadata().unwrap().created().expect("Failed to get mtime");
+        let secs: i64 = ctime_system.duration_since(UNIX_EPOCH).unwrap().as_secs() as i64;
+
+        secs
     }
     
     pub fn by_date(source: &Path, target: &Path) {
