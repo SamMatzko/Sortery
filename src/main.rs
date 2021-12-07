@@ -59,7 +59,6 @@ fn main() {
     if matches.is_present("extract") {
         tools::extract(source, target);
     } else if matches.is_present("by-date") {
-        println!("Sorting by date");
         tools::sort::by_date(source, target);
     }
 }

@@ -6,8 +6,37 @@ pub mod sort {
 
     // use super::super::messages::error_messages;
     use chrono::{DateTime, TimeZone, Utc, Local};
-    use std::{path::Path, time::UNIX_EPOCH};
+    use std::{fs, path::{Path, PathBuf}, time::UNIX_EPOCH};
+    use super::ProgressBar;
     use walkdir::WalkDir;
+
+    fn sort_into_date_dirs(target: &Path, old_file: &Path) {
+        // Move FILE into a set of directories in yyyy/mm/ format according to its
+        // creation time. Create any required directories that don't already exist.
+        // Also rename the file according to its creation date.
+        
+        // Get the creation time of old_file and set the names of the directories
+        let ctime = get_creation_datetime(old_file);
+        let dir = target.join(Path::new(&ctime.format("%Y/%m/").to_string()));
+        
+        // Check if old_file's date dir exists, and if not create it
+        if !dir.exists() {
+            fs::create_dir_all(&dir).expect("Failed to create dirs.");
+        }
+
+        // Create the new file name, making sure that such a file does not exist
+        // If a file of the same name does exist, add a number at the end, as
+        // explained in the get_sequential_name() function.
+        let mut new_file = dir.join(Path::new(&format!(
+            "{}.{}",
+            &ctime.format("%Y-%m-%d %Hh%Mm%Ss").to_string(),
+            old_file.extension().unwrap().to_str().unwrap()
+        )));
+        if new_file.exists() {
+            new_file = get_sequential_name(&new_file).as_path().to_path_buf();
+        }
+        fs::rename(&old_file, &new_file).expect("Failed to rename file.");
+    }
 
     fn get_creation_datetime(path: &Path) -> DateTime<Local> {
         // Return the DateTime instance representing the creation time of PATH
@@ -27,6 +56,35 @@ pub mod sort {
 
         secs
     }
+
+    fn get_sequential_name(path: &Path) -> PathBuf {
+        /*
+        Return a PathBuf representing the renamed version of PATH. This function is
+        called only if PATH already exists, but can't/shouldn't be replaced. The
+        naming system: if `/path/to/file` already exists, return `/path/to/file_2`.
+        If `/path/to/file_2` already exists, return `/path/to/file_3`, etc.
+        */
+
+        let mut num = 2;
+
+        loop {
+
+            // Create the new path name
+            let mut new_pathbuf = path.to_path_buf();
+            new_pathbuf.set_file_name(&format!(
+                "{}_{}.{}",
+                path.file_stem().unwrap().to_str().unwrap(),
+                num,
+                path.extension().unwrap().to_str().unwrap()
+            ));
+
+            // Check if it exists, and if so, continue the loop
+            if !new_pathbuf.exists() {
+                return new_pathbuf;
+            }
+            num += 1;
+        }
+    }
     
     pub fn by_date(source: &Path, target: &Path) {
         // Sort all the files in SOURCE (including in all subdirs) by date into TARGET.
@@ -45,6 +103,13 @@ pub mod sort {
                 items_to_sort += 1;
             }
         }
+
+        // The progress bar
+        let progress_bar = ProgressBar {
+            completed_message: String::from("Done."),
+            message: String::from("Sorting..."),
+            total: items_to_sort
+        };
         
         // Sort the everything, excluding the directories
         for entry in WalkDir::new(source.display().to_string()) {
@@ -55,10 +120,16 @@ pub mod sort {
                 // The Path instance we are sorting
                 let path = entry.path();
                 
-                // The creation date and time
-                println!("{} was created at {}.", path.display(), get_creation_datetime(&path));
+                // Sort the file
+                sort_into_date_dirs(&target, &path);
+                items_sorted += 1;
+
+                // Update the progress bar
+                progress_bar.set_progress(items_sorted);
             }
         }
+        progress_bar.complete();
+        println!("Sucessfully sorted {} items by date into {}.", items_sorted, target.display());
     }
 }
 

@@ -12,10 +12,10 @@ impl ProgressBar {
         // Print the progress bar
 
         let progress_done: usize = ((20f32/self.total as f32)*completed as f32) as usize;
-        let progress_todo: usize = (20f32-((20f32/(self.total-1) as f32)*completed as f32)) as usize;
+        let progress_todo: usize = 20-progress_done as usize;
 
         print!(
-            "{0} |{1}{2}| {3}% {4}/{5}{6}\r",
+            " {0} |{1}{2}| {3}% {4}/{5}{6}\r",
             self.message,
             "⌷".repeat(progress_done),
             "-".repeat(progress_todo),
