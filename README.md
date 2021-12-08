@@ -28,7 +28,7 @@ directory, you will have to install it again.
 
 <h2>Version</h2>
 
-0.2.6
+1.0.0
 
 <h2>License</h2>
 
