@@ -10,51 +10,48 @@ pub mod sort {
     use super::ProgressBar;
     use walkdir::WalkDir;
 
-    fn sort_into_date_dirs(target: &Path, old_file: &Path) {
-        // Move FILE into a set of directories in yyyy/mm/ format according to its
-        // creation time. Create any required directories that don't already exist.
-        // Also rename the file according to its creation date.
-        
-        // Get the creation time of old_file and set the names of the directories
-        let ctime = get_creation_datetime(old_file);
-        let dir = target.join(Path::new(&ctime.format("%Y/%m/").to_string()));
-        
-        // Check if old_file's date dir exists, and if not create it
-        if !dir.exists() {
-            fs::create_dir_all(&dir).expect("Failed to create dirs.");
-        }
+    fn get_epoch_secs_access(path: &Path) -> i64 {
+        // Return the access date and time as the number of seconds since the
+        // UNIX epoch.
+        let ctime_system = path.metadata().unwrap().accessed().expect("Failed to get atime");
+        let secs: i64 = ctime_system.duration_since(UNIX_EPOCH).unwrap().as_secs() as i64;
 
-        // Create the new file name, making sure that such a file does not exist
-        // If a file of the same name does exist, add a number at the end, as
-        // explained in the get_sequential_name() function.
-        let mut new_file = dir.join(Path::new(&format!(
-            "{}.{}",
-            &ctime.format("%Y-%m-%d %Hh%Mm%Ss").to_string(),
-            old_file.extension().unwrap().to_str().unwrap()
-        )));
-        if new_file.exists() {
-            new_file = get_sequential_name(&new_file).as_path().to_path_buf();
-        }
-        fs::rename(&old_file, &new_file).expect("Failed to rename file.");
+        secs
     }
 
-    fn get_creation_datetime(path: &Path) -> DateTime<Local> {
-        // Return the DateTime instance representing the creation time of PATH
-        // in the local time zone.
-        let secs = get_creation_epoch_secs(path);
+    fn get_epoch_secs_creation(path: &Path) -> i64 {
+        // Return the creation date and time as the number of seconds since the
+        // UNIX epoch.
+        let ctime_system = path.metadata().unwrap().created().expect("Failed to get ctime");
+        let secs: i64 = ctime_system.duration_since(UNIX_EPOCH).unwrap().as_secs() as i64;
+
+        secs
+    }
+
+    fn get_epoch_secs_modified(path: &Path) -> i64 {
+        // Return the modification date and time as the number of seconds since the
+        // UNIX epoch.
+        let ctime_system = path.metadata().unwrap().modified().expect("Failed to get mtime");
+        let secs: i64 = ctime_system.duration_since(UNIX_EPOCH).unwrap().as_secs() as i64;
+
+        secs
+    }
+
+    fn get_datetime(path: &Path, date_type: &str) -> DateTime<Local> {
+        // Return a DateTime instance of the creation, modification, or access
+        // time of PATH according to DATE_TYPE.
+        let mut secs: i64;
+        if date_type == "m" {
+            secs = get_epoch_secs_modified(path);
+        } else if date_type == "a" {
+            secs = get_epoch_secs_access(path);
+        } else {
+            secs = get_epoch_secs_creation(path);
+        }
         let ctime = Utc.timestamp(secs, 0);
         let mytime = Local.from_utc_datetime(&ctime.naive_utc());
 
         mytime
-    }
-
-    fn get_creation_epoch_secs(path: &Path) -> i64 {
-        // Return the creation date and time as the number of seconds since the
-        // UNIX epoch.
-        let ctime_system = path.metadata().unwrap().created().expect("Failed to get mtime");
-        let secs: i64 = ctime_system.duration_since(UNIX_EPOCH).unwrap().as_secs() as i64;
-
-        secs
     }
 
     fn get_sequential_name(path: &Path) -> PathBuf {
@@ -85,11 +82,41 @@ pub mod sort {
             num += 1;
         }
     }
+
+    fn sort_into_date_dirs(target: &Path, old_file: &Path, date_format: &str, date_type: &str, preserve_name: bool) {
+        // Move FILE into a set of directories in yyyy/mm/ format according to its
+        // creation time. Create any required directories that don't already exist.
+        // Also rename the file according to its creation date.
+        
+        // Get the time of old_file and set the names of the directories
+        let ctime = get_datetime(old_file, &date_type);
+        let dir = target.join(Path::new(&ctime.format("%Y/%m/").to_string()));
+        
+        // Check if old_file's date dir exists, and if not create it
+        if !dir.exists() {
+            fs::create_dir_all(&dir).expect("Failed to create dirs.");
+        }
+
+        // Create the new file name, making sure that such a file does not exist
+        // If a file of the same name does exist, add a number at the end, as
+        // explained in the get_sequential_name() function.
+        let mut new_file = dir.join(Path::new(&format!(
+            "{}.{}",
+            &ctime.format("%Y-%m-%d %Hh%Mm%Ss").to_string(),
+            old_file.extension().unwrap().to_str().unwrap()
+        )));
+        if new_file.exists() {
+            new_file = get_sequential_name(&new_file).as_path().to_path_buf();
+        }
+        fs::rename(&old_file, &new_file).expect("Failed to rename file.");
+    }
     
-    pub fn by_date(source: &Path, target: &Path) {
-        // Sort all the files in SOURCE (including in all subdirs) by date into TARGET.
-        // For now, this only works if SOURCE and TARGET are both outside each other.
-        // Does not sort directories
+    pub fn sort(source: &Path, target: &Path, date_format: &str, date_type: &str, preserve_name: &bool) {
+        /*
+        Sort all the files in SOURCE (including in all subdirs) by date into TARGET
+        according to the arguments. For now, this only works if SOURCE and TARGET
+        are both outside each other. Does not sort directories.
+        */
 
         // The number of items we have sorted
         let mut items_sorted = 0;
@@ -121,7 +148,7 @@ pub mod sort {
                 let path = entry.path();
                 
                 // Sort the file
-                sort_into_date_dirs(&target, &path);
+                sort_into_date_dirs(&target, &path, date_format, date_type, *preserve_name);
                 items_sorted += 1;
 
                 // Update the progress bar
