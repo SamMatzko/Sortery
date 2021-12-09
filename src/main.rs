@@ -1,7 +1,7 @@
 mod messages;
 mod tools;
 
-use clap::{Arg, App};
+use clap::{App, Arg, SubCommand};
 use messages::error_messages;
 use std::path::Path;
 
@@ -17,7 +17,7 @@ fn main() {
                         .author("Samuel Matzko")
                         .about(about)
                         .arg(Arg::with_name("SOURCE")
-                            .help("The source directory")
+                            .help("The source directory.")
                             .required(true)
                             .index(1))
                         .arg(Arg::with_name("TARGET")
@@ -28,9 +28,24 @@ fn main() {
                             .short("e")
                             .long("extract")
                             .help(extract_help))
-                        .arg(Arg::with_name("by-date")
-                            .long("by-date")
-                            .help("Sort all files from SOURCE into TARGET by date"))
+                        .subcommand(SubCommand::with_name("sort")
+                            .about("Advanced sorting options.")
+                            .arg(Arg::with_name("preserve name")
+                                .short("p")
+                                .long("preserve-name")
+                                .takes_value(true)
+                                .default_value("0")
+                                .help("Preserve the original file name when renaming."))
+                            .arg(Arg::with_name("date-format")
+                                .long("--date-format")
+                                .takes_value(true)
+                                .default_value("%Y-%m-%d %Hh%Mm%Ss")
+                                .help("The date format for renaming files."))
+                            .arg(Arg::with_name("date-type")
+                                .long("date-type")
+                                .takes_value(true)
+                                .default_value("c")
+                                .help("Set which date to sort by.")))
                         .get_matches();
     /*
     Run everything according to the command-line arguments
