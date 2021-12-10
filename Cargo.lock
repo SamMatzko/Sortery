@@ -124,7 +124,7 @@ dependencies = [
 
 [[package]]
 name = "sortery"
-version = "0.3.6"
+version = "1.0.1"
 dependencies = [
  "chrono",
  "clap",
