@@ -34,12 +34,6 @@ directory, you will have to install it again.
 
 [MIT](https://github.com/SamMatzko/Sortery/blob/master/LICENSE-MIT.txt)
 
-<h1>Usage</h1>
+----------
 
-No matter what sorting commands you use, two of the arguments passed to `sortery` are mandatory: the source directory and the target directory. It varies depending on how you're sorting, but the basic principles are this: Sortery gets files and/or dirs from the source directory, and sorts them into the target directory. Here is a simple example that moves all the contents of one directory to another directory:
-
-```
-sortery --extract /home/user/my_dir1 /home/user/my_dir2
-```
-
-In this case, Sortery gets all its files and directories from `/home/user/my_dir1`, and moves them into `/home/user/my_dir2`. You can see the [Sortery Wiki](https://github.com/SamMatzko/Sortery/wiki) for full documentation on the command-line arguments and usage.
+**See the [Sortery Wiki](https://github.com/SamMatzko/Sortery/wiki) for full usage information**
