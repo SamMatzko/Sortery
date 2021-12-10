@@ -26,10 +26,6 @@ directory, you will have to install it again.
   </li>
 </ul>
 
-<h2>Version</h2>
-
-1.0.0
-
 <h2>License</h2>
 
 [MIT](https://github.com/SamMatzko/Sortery/blob/master/LICENSE-MIT.txt)
