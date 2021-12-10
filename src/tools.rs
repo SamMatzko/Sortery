@@ -98,9 +98,12 @@ pub mod sort {
         }
 
         // Preserve the original file name, if we're supposed to.
-        let mut name_to_preserve: &str = "";
+        let mut name_to_preserve = String::from("");
         if preserve_name {
-            name_to_preserve = old_file.file_stem().unwrap().to_str().unwrap();
+            name_to_preserve = format!(
+                " {}",
+                old_file.file_stem().unwrap().to_str().unwrap()
+            );
         }
 
         // Create the new file name
