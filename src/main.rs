@@ -37,7 +37,7 @@ fn main() {
                                 .default_value("0")
                                 .help("Preserve the original file name when renaming."))
                             .arg(Arg::with_name("date-format")
-                                .long("--date-format")
+                                .long("date-format")
                                 .takes_value(true)
                                 .default_value("%Y-%m-%d %Hh%Mm%Ss")
                                 .help("The date format for renaming files."))
@@ -73,7 +73,18 @@ fn main() {
     // Run the commands
     if matches.is_present("extract") {
         tools::extract(source, target);
-    } else if matches.is_present("by-date") {
-        tools::sort::by_date(source, target);
+    } else if matches.is_present("sort") {
+
+        // Variables configured by the command-line options and used when
+        // running the sort tool.
+        let date_format = matches.value_of("date-format").unwrap_or("%Y-%m-%d %Hh%Mm%Ss");
+        let date_type = matches.value_of("date-type").unwrap_or("c");
+        let mut preserve_name = false;
+        if matches.value_of("preserve-name").unwrap_or("0") == "0" {
+            preserve_name = true;
+        }
+
+        // Run the sort tool
+        tools::sort::sort(source, target, &date_format, &date_type, &preserve_name);
     }
 }

@@ -40,7 +40,7 @@ pub mod sort {
     fn get_datetime(path: &Path, date_type: &str) -> DateTime<Local> {
         // Return a DateTime instance of the creation, modification, or access
         // time of PATH according to DATE_TYPE.
-        let mut secs: i64;
+        let secs: i64;
         if date_type == "m" {
             secs = get_epoch_secs_modified(path);
         } else if date_type == "a" {
@@ -97,17 +97,26 @@ pub mod sort {
             fs::create_dir_all(&dir).expect("Failed to create dirs.");
         }
 
-        // Create the new file name, making sure that such a file does not exist
-        // If a file of the same name does exist, add a number at the end, as
-        // explained in the get_sequential_name() function.
+        // Preserve the original file name, if we're supposed to.
+        let mut name_to_preserve: &str = "";
+        if preserve_name {
+            name_to_preserve = old_file.file_stem().unwrap().to_str().unwrap();
+        }
+
+        // Create the new file name
         let mut new_file = dir.join(Path::new(&format!(
-            "{}.{}",
-            &ctime.format("%Y-%m-%d %Hh%Mm%Ss").to_string(),
+            "{}{}.{}",
+            &ctime.format(date_format).to_string(),
+            name_to_preserve,
             old_file.extension().unwrap().to_str().unwrap()
         )));
+
+        // Get the sequential file name if new_file already exists
         if new_file.exists() {
             new_file = get_sequential_name(&new_file).as_path().to_path_buf();
         }
+
+        // Rename the file
         fs::rename(&old_file, &new_file).expect("Failed to rename file.");
     }
     
