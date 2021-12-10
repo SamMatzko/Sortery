@@ -13,7 +13,7 @@ fn main() {
 
     // Get the command-line arguments using clap::App
     let matches = App::new("Sortery")
-                        .version("1.0.0")
+                        .version("0.3.6")
                         .author("Samuel Matzko")
                         .about(about)
                         .arg(Arg::with_name("SOURCE")
@@ -30,11 +30,9 @@ fn main() {
                             .help(extract_help))
                         .subcommand(SubCommand::with_name("sort")
                             .about("Advanced sorting options.")
-                            .arg(Arg::with_name("preserve name")
+                            .arg(Arg::with_name("preserve-name")
                                 .short("p")
                                 .long("preserve-name")
-                                .takes_value(true)
-                                .default_value("0")
                                 .help("Preserve the original file name when renaming."))
                             .arg(Arg::with_name("date-format")
                                 .long("date-format")
@@ -75,14 +73,14 @@ fn main() {
         tools::extract(source, target);
     } else if matches.is_present("sort") {
 
+        // The sub-command matches
+        let sub_matches = matches.subcommand_matches("sort").unwrap();
+
         // Variables configured by the command-line options and used when
         // running the sort tool.
-        let date_format = matches.value_of("date-format").unwrap_or("%Y-%m-%d %Hh%Mm%Ss");
-        let date_type = matches.value_of("date-type").unwrap_or("c");
-        let mut preserve_name = false;
-        if matches.value_of("preserve-name").unwrap_or("0") == "0" {
-            preserve_name = true;
-        }
+        let date_format = sub_matches.value_of("date-format").unwrap_or("%Y-%m-%d %Hh%Mm%Ss");
+        let date_type = sub_matches.value_of("date-type").unwrap_or("c");
+        let preserve_name: bool = sub_matches.is_present("preserve-name");
 
         // Run the sort tool
         tools::sort::sort(source, target, &date_format, &date_type, &preserve_name);
