@@ -83,6 +83,33 @@ pub mod sort {
         }
     }
 
+    fn is_sortable(path: &Path, exclude_type: &(&str, bool), only_type: &(&str, bool)) -> bool {
+        /*
+        Return true if:
+        1) PATH's type is in only_type.0 and only_type.1 is true
+        2) PATH's type is not in exclude_type.0, and only_type.1 is false
+        */
+
+        if is_type(path, only_type.0) && only_type.1 {
+            return true;
+        } else if !is_type(path, exclude_type.0) && !only_type.1 {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    fn is_type(path: &Path, types: &str) -> bool {
+        // Return true if PATH's type is one of the types in TYPES.
+        let mut to_return: bool = false;
+        for t in types.split("-") {
+            if path.extension().unwrap().to_str().unwrap() == t {
+                to_return = true;
+            }
+        }
+        to_return
+    }
+
     fn sort_into_date_dirs(target: &Path, old_file: &Path, date_format: &str, date_type: &str, preserve_name: bool) {
         // Move FILE into a set of directories in yyyy/mm/ format according to its
         // creation time. Create any required directories that don't already exist.
@@ -129,8 +156,8 @@ pub mod sort {
         date_format: &str,
         date_type: &str,
         preserve_name: &bool,
-        exclude_type: &str,
-        only_type: &str
+        exclude_type: (&str, bool),
+        only_type: (&str, bool)
     ) {
         /*
         Sort all the files in SOURCE (including in all subdirs) by date into TARGET
@@ -147,7 +174,9 @@ pub mod sort {
 
             let entry = entry.unwrap();
             if !entry.metadata().expect("Failed to get dir metadata").is_dir() {
-                items_to_sort += 1;
+               if is_sortable(&entry.path(), &exclude_type, &only_type) {
+                   items_to_sort += 1;
+               }
             }
         }
 
@@ -166,13 +195,18 @@ pub mod sort {
 
                 // The Path instance we are sorting
                 let path = entry.path();
-                
-                // Sort the file
-                sort_into_date_dirs(&target, &path, date_format, date_type, *preserve_name);
-                items_sorted += 1;
 
-                // Update the progress bar
-                progress_bar.set_progress(items_sorted);
+                // Make sure that we sort according to the exclude-type and
+                // only-type arguments
+                if is_sortable(&entry.path(), &exclude_type, &only_type) {
+
+                    // Sort the file
+                    sort_into_date_dirs(&target, &path, date_format, date_type, *preserve_name);
+                    items_sorted += 1;
+    
+                    // Update the progress bar
+                    progress_bar.set_progress(items_sorted);
+                }
             }
         }
         progress_bar.complete();
