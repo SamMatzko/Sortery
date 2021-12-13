@@ -123,7 +123,15 @@ pub mod sort {
         fs::rename(&old_file, &new_file).expect("Failed to rename file.");
     }
     
-    pub fn sort(source: &Path, target: &Path, date_format: &str, date_type: &str, preserve_name: &bool) {
+    pub fn sort(
+        source: &Path,
+        target: &Path,
+        date_format: &str,
+        date_type: &str,
+        preserve_name: &bool,
+        exclude_type: &str,
+        only_type: &str
+    ) {
         /*
         Sort all the files in SOURCE (including in all subdirs) by date into TARGET
         according to the arguments. For now, this only works if SOURCE and TARGET

@@ -43,7 +43,17 @@ fn main() {
                                 .long("date-type")
                                 .takes_value(true)
                                 .default_value("c")
-                                .help("Set which date to sort by.")))
+                                .help("Set which date to sort by."))
+                            .arg(Arg::with_name("exclude-type")
+                                .short("e")
+                                .long("exlude-type")
+                                .takes_value(true)
+                                .help("File extension(s) to exclude when sorting."))
+                            .arg(Arg::with_name("only-type")
+                                .short("o")
+                                .long("only-type")
+                                .takes_value(true)
+                                .help("File extension(s) to exclusively sort.")))
                         .get_matches();
     /*
     Run everything according to the command-line arguments
@@ -81,8 +91,18 @@ fn main() {
         let date_format = sub_matches.value_of("date-format").unwrap_or("%Y-%m-%d %Hh%Mm%Ss");
         let date_type = sub_matches.value_of("date-type").unwrap_or("c");
         let preserve_name: bool = sub_matches.is_present("preserve-name");
+        let exclude_type = sub_matches.value_of("exclude-type").unwrap_or("");
+        let only_type = sub_matches.value_of("only-type").unwrap_or("");
 
         // Run the sort tool
-        tools::sort::sort(source, target, &date_format, &date_type, &preserve_name);
+        tools::sort::sort(
+            source,
+            target,
+            &date_format,
+            &date_type,
+            &preserve_name,
+            &exclude_type,
+            &only_type
+        );
     }
 }
