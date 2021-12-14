@@ -10,6 +10,40 @@ pub mod sort {
     use super::ProgressBar;
     use walkdir::WalkDir;
 
+    #[cfg(test)]
+    mod tests {
+        // Tests for tools. Each test function is named after the function in
+        // tools it tests, with the test_ prefix.
+
+        use std::{env, path::Path};
+        use super::*;
+
+        #[test]
+        fn test_get_sequential_name() {
+            let parent_dir = env::current_dir().expect("Failed to get current dir.");
+            let old_path = parent_dir.join(Path::new("testing/test.txt"));
+            let new_path = parent_dir.join(Path::new("testing/test_2.txt"));
+            
+            assert_eq!(new_path, get_sequential_name(&old_path))
+        }
+
+        #[test]
+        fn test_is_sortable() {
+            let path = Path::new("file.txt");
+
+            assert!(is_sortable(&path, &(&"", false), &(&"txt", true)));
+            assert!(is_sortable(&path, &(&"txt", true), &(&"txt", true)));
+            assert!(is_sortable(&path, &(&"", false), &(&"", false)));
+            assert!(!is_sortable(&path, &(&"txt", true), &(&"", false)));
+        }
+
+        #[test]
+        fn test_is_type() {
+            let path = Path::new("file.txt");
+            assert!(is_type(path, &"txt"));
+        }
+    }
+
     fn get_epoch_secs_access(path: &Path) -> i64 {
         // Return the access date and time as the number of seconds since the
         // UNIX epoch.
@@ -174,8 +208,8 @@ pub mod sort {
 
             let entry = entry.unwrap();
             if !entry.metadata().expect("Failed to get dir metadata").is_dir() {
-               if is_sortable(&entry.path(), &exclude_type, &only_type) {
-                   items_to_sort += 1;
+                if is_sortable(&entry.path(), &exclude_type, &only_type) {
+                    items_to_sort += 1;
                }
             }
         }
