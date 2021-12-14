@@ -181,7 +181,12 @@ pub mod sort {
         }
 
         // Rename the file
-        fs::rename(&old_file, &new_file).expect("Failed to rename file.");
+        fs::rename(&old_file, &new_file).expect(
+            &error_messages::PathMoveFailedError {
+                source: &old_file,
+                target: &new_file,
+            }.to_string()
+        );
     }
     
     pub fn sort(
