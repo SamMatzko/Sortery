@@ -1,5 +1,5 @@
 use super::messages::{error_messages, ProgressBar};
-use std::{fs, path::Path};
+use std::{fs, path::{Path, PathBuf}};
 
 // Various sorting algorithms
 pub mod sort {
@@ -7,7 +7,7 @@ pub mod sort {
     // use super::super::messages::error_messages;
     use chrono::{DateTime, TimeZone, Utc, Local};
     use std::{fs, path::{Path, PathBuf}, time::UNIX_EPOCH};
-    use super::ProgressBar;
+    use super::{error_messages, File, ProgressBar};
     use walkdir::WalkDir;
 
     #[cfg(test)]
@@ -88,63 +88,12 @@ pub mod sort {
         mytime
     }
 
-    fn get_sequential_name(path: &Path) -> PathBuf {
-        /*
-        Return a PathBuf representing the renamed version of PATH. This function is
-        called only if PATH already exists, but can't/shouldn't be replaced. The
-        naming system: if `/path/to/file` already exists, return `/path/to/file_2`.
-        If `/path/to/file_2` already exists, return `/path/to/file_3`, etc.
-        */
-
-        let mut num = 2;
-
-        loop {
-
-            // Create the new path name
-            let mut new_pathbuf = path.to_path_buf();
-            new_pathbuf.set_file_name(&format!(
-                "{}_{}.{}",
-                path.file_stem().unwrap().to_str().unwrap(),
-                num,
-                path.extension().unwrap().to_str().unwrap()
-            ));
-
-            // Check if it exists, and if so, continue the loop
-            if !new_pathbuf.exists() {
-                return new_pathbuf;
-            }
-            num += 1;
-        }
-    }
-
-    fn is_sortable(path: &Path, exclude_type: &(&str, bool), only_type: &(&str, bool)) -> bool {
-        /*
-        Return true if:
-        1) PATH's type is in only_type.0 and only_type.1 is true
-        2) PATH's type is not in exclude_type.0, and only_type.1 is false
-        */
-
-        if is_type(path, only_type.0) && only_type.1 {
-            return true;
-        } else if !is_type(path, exclude_type.0) && !only_type.1 {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    fn is_type(path: &Path, types: &str) -> bool {
-        // Return true if PATH's type is one of the types in TYPES.
-        let mut to_return: bool = false;
-        for t in types.split("-") {
-            if path.extension().unwrap().to_str().unwrap() == t {
-                to_return = true;
-            }
-        }
-        to_return
-    }
-
-    fn sort_into_date_dirs(target: &Path, old_file: &Path, date_format: &str, date_type: &str, preserve_name: bool) {
+    fn get_new_date_path(
+        target: &Path,
+        old_file: &Path,
+        date_format: &str,
+        date_type: &str,
+        preserve_name: bool) -> File {
         // Move FILE into a set of directories in yyyy/mm/ format according to its
         // creation time. Create any required directories that don't already exist.
         // Also rename the file according to its creation date.
@@ -179,30 +128,51 @@ pub mod sort {
         if new_file.exists() {
             new_file = get_sequential_name(&new_file).as_path().to_path_buf();
         }
-
-        // Rename the file
-        fs::rename(&old_file, &new_file).expect(
-            &error_messages::PathMoveFailedError {
-                source: &old_file,
-                target: &new_file,
-            }.to_string()
-        );
+        File { path: new_file.to_path_buf() }
     }
-    
-    pub fn sort(
+
+    fn get_sequential_name(path: &Path) -> PathBuf {
+        /*
+        Return a PathBuf representing the renamed version of PATH. This function is
+        called only if PATH already exists, but can't/shouldn't be replaced. The
+        naming system: if `/path/to/file` already exists, return `/path/to/file_2`.
+        If `/path/to/file_2` already exists, return `/path/to/file_3`, etc.
+        */
+
+        let mut num = 2;
+
+        loop {
+
+            // Create the new path name
+            let mut new_pathbuf = path.to_path_buf();
+            new_pathbuf.set_file_name(&format!(
+                "{}_{}.{}",
+                path.file_stem().unwrap().to_str().unwrap(),
+                num,
+                path.extension().unwrap().to_str().unwrap()
+            ));
+
+            // Check if it exists, and if so, continue the loop
+            if !new_pathbuf.exists() {
+                return new_pathbuf;
+            }
+            num += 1;
+        }
+    }
+
+    fn get_sorting_results(
         source: &Path,
         target: &Path,
         date_format: &str,
         date_type: &str,
         preserve_name: &bool,
         exclude_type: (&str, bool),
-        only_type: (&str, bool)
-    ) {
-        /*
-        Sort all the files in SOURCE (including in all subdirs) by date into TARGET
-        according to the arguments. For now, this only works if SOURCE and TARGET
-        are both outside each other. Does not sort directories.
-        */
+        only_type: (&str, bool)) -> Vec<(File, File)> {
+        // The main sorting algorithm; this checks files for validity and shows
+        // the progress bar.
+
+        // The vector to return: a tuple of (old_filename, new_filename)
+        let mut vec: Vec<(File, File)> = Vec::new();
 
         // The number of items we have sorted
         let mut items_sorted = 0;
@@ -239,8 +209,13 @@ pub mod sort {
                 // only-type arguments
                 if is_sortable(&entry.path(), &exclude_type, &only_type) {
 
-                    // Sort the file
-                    sort_into_date_dirs(&target, &path, date_format, date_type, *preserve_name);
+                    // Get the new file name, and push it and the old to vec
+                    vec.push(
+                        (
+                            File { path: path.to_path_buf() },
+                            get_new_date_path(&target, &path, date_format, date_type, *preserve_name)
+                        )
+                    );
                     items_sorted += 1;
     
                     // Update the progress bar
@@ -250,7 +225,72 @@ pub mod sort {
         }
         progress_bar.complete();
         println!("Sucessfully sorted {} items by date into {}.", items_sorted, target.display());
+        vec
     }
+
+    fn is_sortable(path: &Path, exclude_type: &(&str, bool), only_type: &(&str, bool)) -> bool {
+        /*
+        Return true if:
+        1) PATH's type is in only_type.0 and only_type.1 is true
+        2) PATH's type is not in exclude_type.0, and only_type.1 is false
+        */
+
+        if is_type(path, only_type.0) && only_type.1 {
+            return true;
+        } else if !is_type(path, exclude_type.0) && !only_type.1 {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    fn is_type(path: &Path, types: &str) -> bool {
+        // Return true if PATH's type is one of the types in TYPES.
+        let mut to_return: bool = false;
+        for t in types.split("-") {
+            if path.extension().unwrap().to_str().unwrap() == t {
+                to_return = true;
+            }
+        }
+        to_return
+    }
+
+    pub fn sort(
+        source: &Path,
+        target: &Path,
+        date_format: &str,
+        date_type: &str,
+        preserve_name: &bool,
+        exclude_type: (&str, bool),
+        only_type: (&str, bool)) {
+        // Sort the files using the sorting algorithms
+
+        for t in get_sorting_results(
+            source,
+            target,
+            date_format,
+            date_type,
+            preserve_name,
+            exclude_type,
+            only_type)
+        {   
+            // The file paths
+            let old_file = t.0.path.as_path();
+            let new_file = t.1.path.as_path();
+
+            // Rename the file
+            fs::rename(&old_file, &new_file).expect(
+                &error_messages::PathMoveFailedError {
+                    source: &old_file,
+                    target: &new_file,
+                }.to_string()
+            );
+        }
+    }
+}
+
+pub struct File {
+    path: PathBuf,
 }
 
 pub fn extract(source: &Path, target: &Path) {
