@@ -24,7 +24,7 @@ pub mod sort {
             let parent_dir = File::from_pathbuf(&env::current_dir().expect("Failed to get current dir."));
             let old_path = parent_dir.join(Path::new("testing/test.txt"));
             let new_path = parent_dir.join(Path::new("testing/test_2.txt"));
-            
+
             assert_eq!(new_path, get_sequential_name(&old_path));
         }
 
