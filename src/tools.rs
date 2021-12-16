@@ -147,10 +147,10 @@ pub mod sort {
             // Create the new path name
             let mut new_pathbuf = path.to_path_buf();
             new_pathbuf.set_file_name(&format!(
-                "{:?}_{}.{:?}",
-                path.pathbuf.file_stem(),
+                "{}_{}.{}",
+                path.pathbuf.file_stem().unwrap().to_str().unwrap(),
                 num,
-                path.pathbuf.extension()
+                path.pathbuf.extension().unwrap().to_str().unwrap()
             ));
 
             // Check if it exists, and if so, continue the loop
