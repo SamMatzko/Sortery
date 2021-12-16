@@ -29,6 +29,41 @@ pub mod sort {
         }
 
         #[test]
+        fn test_get_sorting_results() {
+
+            // The parameters for testing
+            let source = File::from_pathbuf(&env::current_dir().expect("Failed to get current dir"));
+            let source = source.join(Path::new("testing"));
+            let target = source.join(Path::new("target"));
+            let date_format = "%Y";
+            let date_type = "m";
+            let preserve_name = true;
+            let exclude_type = ("txt", true);
+            let only_type = ("", false);
+            
+            // Get the sorting results
+            let results = get_sorting_results(
+                &source,
+                &target,
+                &date_format,
+                &date_type,
+                &preserve_name,
+                exclude_type,
+                only_type
+            );
+
+            // Check that the sorting results are correct
+            for item in &results {
+                println!("{:?}", item);
+            }
+            assert_eq!(results[0], (source.join(Path::new("test.jpg")), source.join(Path::new("target/2021/02/2021 test.jpg"))));
+            assert_eq!(results[1], (source.join(Path::new("test")), source.join(Path::new("target/2021/02/2021 test."))));
+            assert_eq!(results[2], (source.join(Path::new("files/test")), source.join(Path::new("target/2021/02/2021 test_2."))));
+            assert_eq!(results[3], (source.join(Path::new("test.png")), source.join(Path::new("target/2021/02/2021 test.png"))));
+            assert_eq!(results.len(), 3);
+        }
+
+        #[test]
         fn test_is_sortable() {
             let path = File::new("file.txt");
 
