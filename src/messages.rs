@@ -42,12 +42,12 @@ impl ProgressBar {
 pub mod error_messages {
     // Error message templates for common errors
     
+    use crate::structs::File;
     use colored::Colorize;
-    use std::path::Path;
 
     // When the user inputs a file or directory that doesn't exist
     pub struct PathDoesNotExistError <'a> {
-        pub path: &'a Path,
+        pub path: &'a File,
     }
     impl <'a> PathDoesNotExistError <'a> {
         pub fn to_string(&self) -> String {
@@ -56,15 +56,15 @@ pub mod error_messages {
             return format!(
                 "{} no such file or directory \"{}\". Try sortery --help for more info.",
                 format!("Error:").red(),
-                self.path.display()
+                self.path.to_string()
             );
         }
     }
 
     // When an attempt to move a path fails
     pub struct PathMoveFailedError <'a> {
-        pub source: &'a Path,
-        pub target: &'a Path,
+        pub source: &'a File,
+        pub target: &'a File,
     }
     impl <'a> PathMoveFailedError <'a> {
         pub fn to_string(&self) -> String {
@@ -73,8 +73,8 @@ pub mod error_messages {
             return format!(
                 "{} failed to move {} to {}.",
                     format!("Error:").red(),
-                    self.source.display(),
-                    self.target.display(),
+                    self.source.to_string(),
+                    self.target.to_string(),
                 )
         }
     }

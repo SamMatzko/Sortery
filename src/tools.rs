@@ -1,13 +1,14 @@
+use crate::structs::File;
 use super::messages::{error_messages, ProgressBar};
-use std::{fs, path::{Path, PathBuf}};
+use std::fs;
 
 // Various sorting algorithms
 pub mod sort {
 
     // use super::super::messages::error_messages;
     use chrono::{DateTime, TimeZone, Utc, Local};
-    use std::{fs, path::{Path, PathBuf}, time::UNIX_EPOCH};
-    use super::{error_messages, File, ProgressBar};
+    use crate::{error_messages, messages::ProgressBar, structs::File};
+    use std::{fs, path::Path, time::UNIX_EPOCH};
     use walkdir::WalkDir;
 
     #[cfg(test)]
@@ -44,34 +45,34 @@ pub mod sort {
         }
     }
 
-    fn get_epoch_secs_access(path: &Path) -> i64 {
+    fn get_epoch_secs_access(path: &File) -> i64 {
         // Return the access date and time as the number of seconds since the
         // UNIX epoch.
-        let ctime_system = path.metadata().unwrap().accessed().expect("Failed to get atime");
+        let ctime_system = path.pathbuf.metadata().unwrap().accessed().expect("Failed to get atime");
         let secs: i64 = ctime_system.duration_since(UNIX_EPOCH).unwrap().as_secs() as i64;
 
         secs
     }
 
-    fn get_epoch_secs_creation(path: &Path) -> i64 {
+    fn get_epoch_secs_creation(path: &File) -> i64 {
         // Return the creation date and time as the number of seconds since the
         // UNIX epoch.
-        let ctime_system = path.metadata().unwrap().created().expect("Failed to get ctime");
+        let ctime_system = path.pathbuf.metadata().unwrap().created().expect("Failed to get ctime");
         let secs: i64 = ctime_system.duration_since(UNIX_EPOCH).unwrap().as_secs() as i64;
 
         secs
     }
 
-    fn get_epoch_secs_modified(path: &Path) -> i64 {
+    fn get_epoch_secs_modified(path: &File) -> i64 {
         // Return the modification date and time as the number of seconds since the
         // UNIX epoch.
-        let ctime_system = path.metadata().unwrap().modified().expect("Failed to get mtime");
+        let ctime_system = path.pathbuf.metadata().unwrap().modified().expect("Failed to get mtime");
         let secs: i64 = ctime_system.duration_since(UNIX_EPOCH).unwrap().as_secs() as i64;
 
         secs
     }
 
-    fn get_datetime(path: &Path, date_type: &str) -> DateTime<Local> {
+    fn get_datetime(path: &File, date_type: &str) -> DateTime<Local> {
         // Return a DateTime instance of the creation, modification, or access
         // time of PATH according to DATE_TYPE.
         let secs: i64;
@@ -89,8 +90,8 @@ pub mod sort {
     }
 
     fn get_new_date_path(
-        target: &Path,
-        old_file: &Path,
+        target: &File,
+        old_file: &File,
         date_format: &str,
         date_type: &str,
         preserve_name: bool) -> File {
@@ -104,7 +105,7 @@ pub mod sort {
         
         // Check if old_file's date dir exists, and if not create it
         if !dir.exists() {
-            fs::create_dir_all(&dir).expect("Failed to create dirs.");
+            fs::create_dir_all(&dir.pathbuf.as_path()).expect("Failed to create dirs.");
         }
 
         // Preserve the original file name, if we're supposed to.
@@ -112,7 +113,7 @@ pub mod sort {
         if preserve_name {
             name_to_preserve = format!(
                 " {}",
-                old_file.file_stem().unwrap().to_str().unwrap()
+                old_file.file_stem()
             );
         }
 
@@ -121,17 +122,17 @@ pub mod sort {
             "{}{}.{}",
             &ctime.format(date_format).to_string(),
             name_to_preserve,
-            old_file.extension().unwrap().to_str().unwrap()
+            old_file.extension()
         )));
 
         // Get the sequential file name if new_file already exists
         if new_file.exists() {
-            new_file = get_sequential_name(&new_file).as_path().to_path_buf();
+            new_file = get_sequential_name(&new_file);
         }
-        File { path: new_file.to_path_buf() }
+        new_file
     }
 
-    fn get_sequential_name(path: &Path) -> PathBuf {
+    fn get_sequential_name(path: &File) -> File {
         /*
         Return a PathBuf representing the renamed version of PATH. This function is
         called only if PATH already exists, but can't/shouldn't be replaced. The
@@ -146,23 +147,23 @@ pub mod sort {
             // Create the new path name
             let mut new_pathbuf = path.to_path_buf();
             new_pathbuf.set_file_name(&format!(
-                "{}_{}.{}",
-                path.file_stem().unwrap().to_str().unwrap(),
+                "{:?}_{}.{:?}",
+                path.pathbuf.file_stem(),
                 num,
-                path.extension().unwrap().to_str().unwrap()
+                path.pathbuf.extension()
             ));
 
             // Check if it exists, and if so, continue the loop
             if !new_pathbuf.exists() {
-                return new_pathbuf;
+                return File::from_pathbuf(&new_pathbuf);
             }
             num += 1;
         }
     }
 
     fn get_sorting_results(
-        source: &Path,
-        target: &Path,
+        source: &File,
+        target: &File,
         date_format: &str,
         date_type: &str,
         preserve_name: &bool,
@@ -179,11 +180,11 @@ pub mod sort {
 
         // Count the number of items we are going to sort
         let mut items_to_sort = 0;
-        for entry in WalkDir::new(source.display().to_string()) {
+        for entry in WalkDir::new(source.to_string()) {
 
             let entry = entry.unwrap();
             if !entry.metadata().expect("Failed to get dir metadata").is_dir() {
-                if is_sortable(&entry.path(), &exclude_type, &only_type) {
+                if is_sortable(&File::from_path(entry.path()), &exclude_type, &only_type) {
                     items_to_sort += 1;
                }
             }
@@ -197,22 +198,22 @@ pub mod sort {
         };
         
         // Sort the everything, excluding the directories
-        for entry in WalkDir::new(source.display().to_string()) {
+        for entry in WalkDir::new(source.to_string()) {
             
             let entry = entry.unwrap();
             if !entry.metadata().expect("Failed to get dir metadata").is_dir() {
 
-                // The Path instance we are sorting
-                let path = entry.path();
+                // The File instance we are sorting
+                let path = File::from_path(entry.path());
 
                 // Make sure that we sort according to the exclude-type and
                 // only-type arguments
-                if is_sortable(&entry.path(), &exclude_type, &only_type) {
+                if is_sortable(&File::from_path(entry.path()), &exclude_type, &only_type) {
 
                     // Get the new file name, and push it and the old to vec
                     vec.push(
                         (
-                            File { path: path.to_path_buf() },
+                            path.copy(),
                             get_new_date_path(&target, &path, date_format, date_type, *preserve_name)
                         )
                     );
@@ -224,11 +225,11 @@ pub mod sort {
             }
         }
         progress_bar.complete();
-        println!("Sucessfully sorted {} items by date into {}.", items_sorted, target.display());
+        println!("Sucessfully sorted {} items by date into {}.", items_sorted, target.to_string());
         vec
     }
 
-    fn is_sortable(path: &Path, exclude_type: &(&str, bool), only_type: &(&str, bool)) -> bool {
+    fn is_sortable(path: &File, exclude_type: &(&str, bool), only_type: &(&str, bool)) -> bool {
         /*
         Return true if:
         1) PATH's type is in only_type.0 and only_type.1 is true
@@ -244,11 +245,11 @@ pub mod sort {
         }
     }
 
-    fn is_type(path: &Path, types: &str) -> bool {
+    fn is_type(path: &File, types: &str) -> bool {
         // Return true if PATH's type is one of the types in TYPES.
         let mut to_return: bool = false;
         for t in types.split("-") {
-            if path.extension().unwrap().to_str().unwrap() == t {
+            if path.extension() == t {
                 to_return = true;
             }
         }
@@ -256,8 +257,8 @@ pub mod sort {
     }
 
     pub fn sort(
-        source: &Path,
-        target: &Path,
+        source: &File,
+        target: &File,
         date_format: &str,
         date_type: &str,
         preserve_name: &bool,
@@ -275,25 +276,21 @@ pub mod sort {
             only_type)
         {   
             // The file paths
-            let old_file = t.0.path.as_path();
-            let new_file = t.1.path.as_path();
+            let old_file = t.0.pathbuf.as_path();
+            let new_file = t.1.pathbuf.as_path();
 
             // Rename the file
             fs::rename(&old_file, &new_file).expect(
                 &error_messages::PathMoveFailedError {
-                    source: &old_file,
-                    target: &new_file,
+                    source: &File::from_path(old_file),
+                    target: &File::from_path(new_file),
                 }.to_string()
             );
         }
     }
 }
 
-pub struct File {
-    path: PathBuf,
-}
-
-pub fn extract(source: &Path, target: &Path) {
+pub fn extract(source: &File, target: &File) {
     // Extract the contents of SOURCE to TARGET
 
     // The number of items we have moved
@@ -301,14 +298,14 @@ pub fn extract(source: &Path, target: &Path) {
 
     // Count the number of items we are going to move
     let mut items_to_move = 0;
-    for entry in source.read_dir().expect("Failed to read dir") {
+    for entry in source.pathbuf.as_path().read_dir().expect("Failed to read dir") {
 
         // The entry path
         let entry = entry.expect("Failed to get dir entry.");
-        let old_path = entry.path();
+        let old_path = File::from_pathbuf(&entry.path());
 
         // Make sure that the path being moved is not the source or target
-        if old_path == source || old_path == target { continue }
+        if &old_path == source || &old_path == target { continue }
 
         items_to_move += 1;
     }
@@ -321,21 +318,21 @@ pub fn extract(source: &Path, target: &Path) {
     };
 
     // Move each entry (file or directory) in the directory
-    for entry in source.read_dir().expect("Failed to read dir.") {
+    for entry in source.pathbuf.as_path().read_dir().expect("Failed to read dir.") {
 
         // The entry path
         let entry = entry.expect("Failed to get dir entry.");
-        let old_path = entry.path();
+        let old_path = File::from_pathbuf(&entry.path());
 
         // Calculate the new path for the entry
-        let new_path = target.join(old_path.file_name().unwrap());
+        let new_path = target.join_string(&old_path.file_name());
 
         // Make sure that the path being moved is not the source or target
-        if old_path == source || old_path == target { continue }
+        if &old_path == source || &old_path == target { continue }
 
         // Move the path
-        // println!("Moving {} to {}...", &old_path.display(), &new_path.display());
-        fs::rename(old_path.display().to_string(), new_path.display().to_string())
+        // println!("Moving {} to {}...", &old_path.to_string(), &new_path.to_string());
+        fs::rename(old_path.to_string(), new_path.to_string())
             .expect(
                 &error_messages::PathMoveFailedError {
                     source: &old_path,
@@ -351,5 +348,5 @@ pub fn extract(source: &Path, target: &Path) {
     }
     // Show success status
     progress_bar.complete();
-    println!("Successfully moved {} items to {}.", items_moved, target.display());
+    println!("Successfully moved {} items to {}.", items_moved, target.to_string());
 }

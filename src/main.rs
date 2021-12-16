@@ -1,9 +1,10 @@
 mod messages;
+mod structs;
 mod tools;
 
 use clap::{App, Arg, SubCommand};
 use messages::error_messages;
-use std::path::Path;
+use structs::File;
 
 fn main() {
 
@@ -63,8 +64,8 @@ fn main() {
     let exit_for_error = false;
 
     // The source and target directories
-    let source = Path::new(matches.value_of("SOURCE").unwrap());
-    let target = Path::new(matches.value_of("TARGET").unwrap());
+    let source = File::new(matches.value_of("SOURCE").unwrap());
+    let target = File::new(matches.value_of("TARGET").unwrap());
 
     // Check the existence of source and target direcotories, and raise errors
     // if they don't exist
@@ -80,7 +81,7 @@ fn main() {
     
     // Run the commands
     if matches.is_present("extract") {
-        tools::extract(source, target);
+        tools::extract(&source, &target);
     } else if matches.is_present("sort") {
 
         // The sub-command matches
@@ -102,8 +103,8 @@ fn main() {
 
         // Run the sort tool
         tools::sort::sort(
-            source,
-            target,
+            &source,
+            &target,
             &date_format,
             &date_type,
             &preserve_name,
