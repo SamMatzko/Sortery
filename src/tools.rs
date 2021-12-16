@@ -21,7 +21,7 @@ pub mod sort {
 
         #[test]
         fn test_get_sequential_name() {
-            let parent_dir = env::current_dir().expect("Failed to get current dir.");
+            let parent_dir = File::from_pathbuf(&env::current_dir().expect("Failed to get current dir."));
             let old_path = parent_dir.join(Path::new("testing/test.txt"));
             let new_path = parent_dir.join(Path::new("testing/test_2.txt"));
             
@@ -30,7 +30,7 @@ pub mod sort {
 
         #[test]
         fn test_is_sortable() {
-            let path = Path::new("file.txt");
+            let path = File::new("file.txt");
 
             assert!(is_sortable(&path, &(&"", false), &(&"txt", true)));
             assert!(is_sortable(&path, &(&"txt", true), &(&"txt", true)));
@@ -40,8 +40,8 @@ pub mod sort {
 
         #[test]
         fn test_is_type() {
-            let path = Path::new("file.txt");
-            assert!(is_type(path, &"txt"));
+            let path = File::new("file.txt");
+            assert!(is_type(&path, &"txt"));
         }
     }
 

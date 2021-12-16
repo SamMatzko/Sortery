@@ -1,6 +1,7 @@
 use std::path::{Path, PathBuf};
 
 // The struct used in all the cross-function path functionality
+#[derive(Debug)]
 #[derive(PartialEq)]
 pub struct File {
     pub pathbuf: PathBuf,
