@@ -11,6 +11,7 @@ impl File {
         // Return an instance of File with the same path as ours
         File { pathbuf: PathBuf::from(&self.pathbuf) }
     }
+
     pub fn from_path(path: &Path) -> File {
         // Return a new instance of File, with PATH as the path
         File { pathbuf: path.to_path_buf() }
@@ -32,28 +33,26 @@ impl File {
 
     pub fn extension(&self) -> String {
         // Return a string representing the extension of the path
-        self.pathbuf.as_path().extension()
-            .expect("Failed to get data.")
-            .to_str()
-            .expect("Failed to convert to str")
-            .to_string()
+        match self.pathbuf.as_path().extension() {
+            None => return String::from(""),
+            s => return String::from(s.unwrap().to_str().unwrap()),
+        }
     }
 
     pub fn file_name(&self) -> String {
         // Return the file name of our path
-        self.pathbuf.file_name().expect("Failed to get file name.")
-            .to_str()
-            .expect("Failed to convert to str")
-            .to_string()
+        match self.pathbuf.as_path().file_name() {
+            None => return String::from(""),
+            s => return String::from(s.unwrap().to_str().unwrap()),
+        }
     }
 
     pub fn file_stem(&self) -> String {
         // Return a string representing the file stem of the path
-        self.pathbuf.as_path().file_stem()
-            .expect("Failed to get data.")
-            .to_str()
-            .expect("Failed to convert to str")
-            .to_string()
+        match self.pathbuf.as_path().file_stem() {
+            None => return String::from(""),
+            s => return String::from(s.unwrap().to_str().unwrap()),
+        }
     }
 
     pub fn join(&self, path: &Path) -> File {
