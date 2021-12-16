@@ -50,7 +50,7 @@ pub mod sort {
                 &preserve_name,
                 exclude_type,
                 only_type
-            );
+            ).1;
 
             // Check that the sorting results are correct
             for item in &results {
@@ -203,15 +203,12 @@ pub mod sort {
         date_type: &str,
         preserve_name: &bool,
         exclude_type: (&str, bool),
-        only_type: (&str, bool)) -> Vec<(File, File)> {
+        only_type: (&str, bool)) -> (usize, Vec<(File, File)>) {
         // The main sorting algorithm; this checks files for validity and shows
         // the progress bar.
 
         // The vector to return: a tuple of (old_filename, new_filename)
         let mut vec: Vec<(File, File)> = Vec::new();
-
-        // The number of items we have sorted
-        let mut items_sorted = 0;
 
         // Count the number of items we are going to sort
         let mut items_to_sort = 0;
@@ -224,13 +221,6 @@ pub mod sort {
                }
             }
         }
-
-        // The progress bar
-        let progress_bar = ProgressBar {
-            completed_message: String::from("Done."),
-            message: String::from("Sorting..."),
-            total: items_to_sort
-        };
         
         // Sort the everything, excluding the directories
         for entry in WalkDir::new(source.to_string()) {
@@ -252,16 +242,10 @@ pub mod sort {
                             get_new_date_path(&target, &path, date_format, date_type, *preserve_name)
                         )
                     );
-                    items_sorted += 1;
-    
-                    // Update the progress bar
-                    progress_bar.set_progress(items_sorted);
                 }
             }
         }
-        progress_bar.complete();
-        println!("Sucessfully sorted {} items by date into {}.", items_sorted, target.to_string());
-        vec
+        (items_to_sort, vec)
     }
 
     fn is_sortable(path: &File, exclude_type: &(&str, bool), only_type: &(&str, bool)) -> bool {
@@ -301,15 +285,32 @@ pub mod sort {
         only_type: (&str, bool)) {
         // Sort the files using the sorting algorithms
 
-        for t in get_sorting_results(
+        // The results of the sorting algorithm
+        let results = get_sorting_results(
             source,
             target,
             date_format,
             date_type,
             preserve_name,
             exclude_type,
-            only_type)
-        {   
+            only_type
+        );
+
+        // The number of items to sort
+        let items_to_sort = results.0;
+        
+        // The number of items we have sorted
+        let mut items_sorted = 0;
+
+        // The progress bar
+        let progress_bar = ProgressBar {
+            completed_message: String::from("Done."),
+            message: String::from("Sorting..."),
+            total: items_to_sort
+        };
+
+        for t in results.1 {
+
             // The file paths
             let old_file = t.0.pathbuf.as_path();
             let new_file = t.1.pathbuf.as_path();
@@ -321,7 +322,13 @@ pub mod sort {
                     target: &File::from_path(new_file),
                 }.to_string()
             );
+            items_sorted += 1;
+
+            // Update the progress bar
+            progress_bar.set_progress(items_sorted);
         }
+        progress_bar.complete();
+        println!("Sucessfully sorted {} items by date into {}.", items_sorted, target.to_string());
     }
 }
 
