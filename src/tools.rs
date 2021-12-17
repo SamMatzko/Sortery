@@ -23,9 +23,12 @@ pub mod sort {
         fn test_get_sequential_name() {
             let parent_dir = File::from_pathbuf(&env::current_dir().expect("Failed to get current dir."));
             let old_path = parent_dir.join(Path::new("testing/test.txt"));
+            let existing_path = parent_dir.join(Path::new("testing/test_1.txt"));
             let new_path = parent_dir.join(Path::new("testing/test_2.txt"));
-
-            assert_eq!(new_path, get_sequential_name(&old_path));
+            let mut vec = Vec::new();
+            vec.push(existing_path);
+            
+            assert_eq!(new_path, get_sequential_name(&old_path, &vec));
         }
 
         #[test]
@@ -50,17 +53,22 @@ pub mod sort {
                 &preserve_name,
                 exclude_type,
                 only_type
-            ).1;
-
-            // Check that the sorting results are correct
-            for item in &results {
-                println!("{:?}", item);
+            );
+            let (old, new) = (&results.1, &results.2);
+            
+            // Print all the options in case of a test failure
+            for i in 0..4 {
+                println!("Old: {:?}, New: {:?}", old[i].copy(), new[i].copy());
             }
-            assert_eq!(results[0], (source.join(Path::new("test.jpg")), source.join(Path::new("target/2021/02/2021 test.jpg"))));
-            assert_eq!(results[1], (source.join(Path::new("test")), source.join(Path::new("target/2021/02/2021 test."))));
-            assert_eq!(results[2], (source.join(Path::new("files/test")), source.join(Path::new("target/2021/02/2021 test_2."))));
-            assert_eq!(results[3], (source.join(Path::new("test.png")), source.join(Path::new("target/2021/02/2021 test.png"))));
-            assert_eq!(results.len(), 3);
+            
+            // Check that the sorting results are correct
+            assert_eq!((old[0].copy(), new[0].copy()), (source.join(Path::new("test.jpg")), source.join(Path::new("target/2021/02/2021 test.jpg"))));
+            assert_eq!((old[1].copy(), new[1].copy()), (source.join(Path::new("test")), source.join(Path::new("target/2021/02/2021 test."))));
+            assert_eq!((old[2].copy(), new[2].copy()), (source.join(Path::new("files/test")), source.join(Path::new("target/2021/02/2021 test_2."))));
+            assert_eq!((old[3].copy(), new[3].copy()), (source.join(Path::new("test.png")), source.join(Path::new("target/2021/02/2021 test.png"))));
+            assert_eq!(results.0, 4);
+            assert_eq!(old.len(), 4);
+            assert_eq!(new.len(), 4);
         }
 
         #[test]
@@ -153,21 +161,17 @@ pub mod sort {
         }
 
         // Create the new file name
-        let mut new_file = dir.join(Path::new(&format!(
+        let new_file = dir.join(Path::new(&format!(
             "{}{}.{}",
             &ctime.format(date_format).to_string(),
             name_to_preserve,
             old_file.extension()
         )));
 
-        // Get the sequential file name if new_file already exists
-        if new_file.exists() {
-            new_file = get_sequential_name(&new_file);
-        }
         new_file
     }
 
-    fn get_sequential_name(path: &File) -> File {
+    fn get_sequential_name(path: &File, vec: &Vec<File>) -> File {
         /*
         Return a PathBuf representing the renamed version of PATH. This function is
         called only if PATH already exists, but can't/shouldn't be replaced. The
@@ -187,10 +191,11 @@ pub mod sort {
                 num,
                 path.pathbuf.extension().unwrap().to_str().unwrap()
             ));
+            let new_file = File::from_pathbuf(&new_pathbuf);
 
             // Check if it exists, and if so, continue the loop
-            if !new_pathbuf.exists() {
-                return File::from_pathbuf(&new_pathbuf);
+            if !vec.contains(&new_file) {
+                return new_file;
             }
             num += 1;
         }
@@ -203,12 +208,13 @@ pub mod sort {
         date_type: &str,
         preserve_name: &bool,
         exclude_type: (&str, bool),
-        only_type: (&str, bool)) -> (usize, Vec<(File, File)>) {
+        only_type: (&str, bool)) -> (usize, Vec<File>, Vec<File>) {
         // The main sorting algorithm; this checks files for validity and shows
         // the progress bar.
 
         // The vector to return: a tuple of (old_filename, new_filename)
-        let mut vec: Vec<(File, File)> = Vec::new();
+        let mut vec_old: Vec<File> = Vec::new();
+        let mut vec_new: Vec<File> = Vec::new();
 
         // Count the number of items we are going to sort
         let mut items_to_sort = 0;
@@ -235,17 +241,20 @@ pub mod sort {
                 // only-type arguments
                 if is_sortable(&File::from_path(entry.path()), &exclude_type, &only_type) {
 
-                    // Get the new file name, and push it and the old to vec
-                    vec.push(
-                        (
-                            path.copy(),
-                            get_new_date_path(&target, &path, date_format, date_type, *preserve_name)
-                        )
-                    );
+                    let mut new_file = get_new_date_path(&target, &path, date_format, date_type, *preserve_name);
+
+                    // Get the sequential file name if new_file already exists
+                    if vec_new.contains(&new_file) {
+                        new_file = get_sequential_name(&new_file, &vec_new);
+                    }
+
+                    // Push the new and old file names to their respective vectors
+                    vec_old.push(path.copy());
+                    vec_new.push(new_file);
                 }
             }
         }
-        (items_to_sort, vec)
+        (items_to_sort, vec_old, vec_new)
     }
 
     fn is_sortable(path: &File, exclude_type: &(&str, bool), only_type: &(&str, bool)) -> bool {
@@ -309,11 +318,11 @@ pub mod sort {
             total: items_to_sort
         };
 
-        for t in results.1 {
+        for (old, new) in results.1.iter().zip(results.2.iter()) {
 
             // The file paths
-            let old_file = t.0.pathbuf.as_path();
-            let new_file = t.1.pathbuf.as_path();
+            let old_file = old.pathbuf.as_path();
+            let new_file = new.pathbuf.as_path();
 
             // Rename the file
             fs::rename(&old_file, &new_file).expect(
