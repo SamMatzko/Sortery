@@ -1,0 +1,9 @@
+{
+    "source": "/path/to/source/",
+    "target": "/path/to/target/",
+    "date-format": "%Y-%m-%d %Hh%Mm%Ss",
+    "date-type": "m",
+    "exclude-type": [""],
+    "only-type": [""],
+    "preserve-name": false
+}
