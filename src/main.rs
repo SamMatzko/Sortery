@@ -10,6 +10,7 @@ fn main() {
 
     // Some of the text used in the app creation
     let about = "Sortery is a basic file sorter.";
+    let config_help = "Path to a JSON file with configuration information. Use template.json as a template.";
     let extract_help = "Move all files and directories from SOURCE to TARGET";
 
     // Get the command-line arguments using clap::App
@@ -35,6 +36,11 @@ fn main() {
                                 .short("p")
                                 .long("preserve-name")
                                 .help("Preserve the original file name when renaming."))
+                            .arg(Arg::with_name("config-file")
+                                .short("c")
+                                .long("config-file")
+                                .takes_value(true)
+                                .help(config_help))
                             .arg(Arg::with_name("date-format")
                                 .long("date-format")
                                 .takes_value(true)
