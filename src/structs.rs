@@ -5,8 +5,6 @@ use std::path::{Path, PathBuf};
 #[derive(Debug)]
 #[derive(Serialize, Deserialize)]
 pub struct ConfigData {
-    pub source: String,
-    pub target: String,
     pub date_format: String,
     pub date_type: String,
     pub exclude_type: Vec<String>,
@@ -20,8 +18,6 @@ impl ConfigData {
         let json_data: ConfigData = serde_json::from_str(json.as_str()).expect("Failed to parse json.");
 
         ConfigData {
-            source: json_data.source,
-            target: json_data.target,
             date_format: json_data.date_format,
             date_type: json_data.date_type,
             exclude_type: json_data.exclude_type,

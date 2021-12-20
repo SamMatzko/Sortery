@@ -1,6 +1,4 @@
 {
-    "source": "/path/to/source/",
-    "target": "/path/to/target/",
     "date_format": "%Y-%m-%d %Hh%Mm%Ss",
     "date_type": "m",
     "exclude_type": [],

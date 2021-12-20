@@ -27,6 +27,11 @@ fn main() {
                             .help("The target directory.")
                             .required(true)
                             .index(2))
+                        .arg(Arg::with_name("config-file")
+                            .short("c")
+                            .long("config-file")
+                            .takes_value(true)
+                            .help(config_help))
                         .arg(Arg::with_name("extract")
                             .short("e")
                             .long("extract")
@@ -37,11 +42,6 @@ fn main() {
                                 .short("p")
                                 .long("preserve-name")
                                 .help("Preserve the original file name when renaming."))
-                            .arg(Arg::with_name("config-file")
-                                .short("c")
-                                .long("config-file")
-                                .takes_value(true)
-                                .help(config_help))
                             .arg(Arg::with_name("date-format")
                                 .long("date-format")
                                 .takes_value(true)
@@ -85,6 +85,17 @@ fn main() {
 
     // Exit if there were any errors
     if exit_for_error { return; }
+
+    // If a json config file was given, sort according to it
+    if matches.is_present("config-file") {
+        tools::sort::sort_from_json(
+            fs::read_to_string(matches.value_of("config-file").unwrap())
+                .expect("Failed to read config file."),
+            source,
+            target
+        );
+        return;
+    }
     
     // Run the commands
     if matches.is_present("extract") {
@@ -93,15 +104,6 @@ fn main() {
 
         // The sub-command matches
         let sub_matches = matches.subcommand_matches("sort").unwrap();
-
-        // If a json config file was given, sort according to it
-        if sub_matches.is_present("config-file") {
-            tools::sort::sort_from_json(
-                fs::read_to_string(sub_matches.value_of("config-file").unwrap())
-                    .expect("Failed to read config file.")
-            );
-            return;
-        }
 
         // Variables configured by the command-line options and used when
         // running the sort tool.

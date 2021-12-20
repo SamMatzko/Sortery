@@ -340,15 +340,13 @@ pub mod sort {
         println!("Sucessfully sorted {} items by date into {}.", items_sorted, target.to_string());
     }
 
-    pub fn sort_from_json(json: String) {
+    pub fn sort_from_json(json: String, source: File, target: File) {
         // Sort according to configuration data in json string JSON
 
         // Get the json data
         let data = ConfigData::from_json(&json);
 
         // Make sure that the directories actually exist
-        let source = File::new(&data.source.as_str());
-        let target = File::new(&data.target.as_str());
         let mut errors = false;
         if !source.exists() {
             println!("{}", error_messages::PathDoesNotExistError { path: &source }.to_string());
@@ -362,7 +360,7 @@ pub mod sort {
 
         // Run the sorting algorithm with the data
         let exclude_type: (&str, bool) = (&data.exclude_type.join("-"), data.exclude_type.len() > 0);
-        let only_type: (&str, bool) = (&data.exclude_type.join("-"), data.exclude_type.len() > 0);
+        let only_type: (&str, bool) = (&data.only_type.join("-"), data.only_type.len() > 0);
         sort(
             &source,
             &target,
