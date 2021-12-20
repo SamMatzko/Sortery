@@ -7,7 +7,7 @@ mod tests {
     // it tests, prefixed with test.
 
     use std::{env, fs, path::Path};
-    use super::ConfigData;
+    use super::{ConfigData, File};
     
     #[test]
     fn test_configdata() {
@@ -28,6 +28,30 @@ mod tests {
         assert_eq!(config_data.only_type[0], String::from("json"));
         assert_eq!(config_data.only_type[1], String::from("py"));
         assert_eq!(config_data.preserve_name, false);
+    }
+
+    #[test]
+    fn test_file() {
+        // Test the File struct
+
+        // The variables used for testing
+        let path = Path::new("my_file.txt");
+        let joined_path = Path::new("my_file.txt/my_file.txt");
+        let file = File::from_path(path);
+
+        // Test the methods
+        assert!(!file.exists());
+        assert_eq!(file.copy(), File { pathbuf: path.to_path_buf() });
+        assert_eq!(File::from_path(path), File { pathbuf: path.to_path_buf() });
+        assert_eq!(File::from_pathbuf(&path.to_path_buf()), File { pathbuf: path.to_path_buf() });
+        assert_eq!(file.extension(), String::from("txt"));
+        assert_eq!(file.file_name(), String::from("my_file.txt"));
+        assert_eq!(file.file_stem(), String::from("my_file"));
+        assert_eq!(file.join(path), File { pathbuf: joined_path.to_path_buf() });
+        assert_eq!(file.join_string(&String::from("my_file.txt")), File { pathbuf: joined_path.to_path_buf() });
+        assert_eq!(File::new("my_file.txt"), File { pathbuf: path.to_path_buf() });
+        assert_eq!(file.to_path_buf(), path.to_path_buf());
+        assert_eq!(file.to_string(), String::from("my_file.txt"));
     }
 }
 
@@ -55,23 +79,6 @@ impl ConfigData {
             preserve_name: json_data.preserve_name
         }
     }
-    // pub fn from_path(path: &String) -> ConfigData {
-    //     // Return an instance of ConfigData from the data in json config file PATH
-        
-    //     println!("Path: {:?}", path);
-    //     let json_string = fs::read_to_string(Path::new(&path)).expect("Failed to read file.");
-    //     let json_data: ConfigData = serde_json::from_str(json_string.as_str()).expect("Failed to parse json.");
-
-    //     ConfigData {
-    //         source: json_data.source,
-    //         target: json_data.target,
-    //         date_format: json_data.date_format,
-    //         date_type: json_data.date_type,
-    //         exclude_type: json_data.exclude_type,
-    //         only_type: json_data.only_type,
-    //         preserve_name: json_data.preserve_name
-    //     }
-    // }
 }
 
 // The struct used in all the cross-function path functionality
