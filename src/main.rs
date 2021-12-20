@@ -10,13 +10,13 @@ use structs::File;
 fn main() {
 
     // Some of the text used in the app creation
-    let about = "Sortery is a basic file sorter.";
+    let about = "Sortery is a simple, fast command-line file sorter for Linux.";
     let config_help = "Path to a JSON file with configuration information. Use template.json as a template.";
     let extract_help = "Move all files and directories from SOURCE to TARGET";
 
     // Get the command-line arguments using clap::App
     let matches = App::new("Sortery")
-                        .version("1.2.1")
+                        .version("1.3.1")
                         .author("Samuel Matzko")
                         .about(about)
                         .arg(Arg::with_name("SOURCE")
