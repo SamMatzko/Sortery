@@ -1,7 +1,7 @@
 {
     "date_format": "%Y-%m-%d %Hh%Mm%Ss",
     "date_type": "m",
-    "exclude_type": [],
-    "only_type": [],
+    "exclude_type": ["png"],
+    "only_type": ["json", "py"],
     "preserve_name": false
 }

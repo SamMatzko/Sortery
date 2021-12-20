@@ -1,6 +1,36 @@
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
+#[cfg(test)]
+mod tests {
+    // Tests for the structs. Each test is named after the function and/or struct
+    // it tests, prefixed with test.
+
+    use std::{env, fs, path::Path};
+    use super::ConfigData;
+    
+    #[test]
+    fn test_configdata() {
+        // Test the ConfigData struct
+        
+        // Read the json string from template.json
+        let current_dir = env::current_dir().expect("Failed to get current dir.");
+        let path = current_dir.join(Path::new("template.json"));
+        let json_string = fs::read_to_string(path).expect("Failed to parse json.");
+
+        // Create the ConfigData instance and test it's fields
+        let config_data = ConfigData::from_json(&json_string);
+        assert_eq!(config_data.date_format, String::from("%Y-%m-%d %Hh%Mm%Ss"));
+        assert_eq!(config_data.date_type, String::from("m"));
+        assert_eq!(config_data.exclude_type.len(), 1);
+        assert_eq!(config_data.exclude_type[0], String::from("png"));
+        assert_eq!(config_data.only_type.len(), 2);
+        assert_eq!(config_data.only_type[0], String::from("json"));
+        assert_eq!(config_data.only_type[1], String::from("py"));
+        assert_eq!(config_data.preserve_name, false);
+    }
+}
+
 // The struct used for getting the config data from a json file
 #[derive(Debug)]
 #[derive(Serialize, Deserialize)]
