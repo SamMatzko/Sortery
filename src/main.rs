@@ -4,6 +4,7 @@ mod tools;
 
 use clap::{App, Arg, SubCommand};
 use messages::error_messages;
+use std::fs;
 use structs::File;
 
 fn main() {
@@ -92,6 +93,15 @@ fn main() {
 
         // The sub-command matches
         let sub_matches = matches.subcommand_matches("sort").unwrap();
+
+        // If a json config file was given, sort according to it
+        if sub_matches.is_present("config-file") {
+            tools::sort::sort_from_json(
+                fs::read_to_string(sub_matches.value_of("config-file").unwrap())
+                    .expect("Failed to read config file.")
+            );
+            return;
+        }
 
         // Variables configured by the command-line options and used when
         // running the sort tool.

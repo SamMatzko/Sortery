@@ -7,7 +7,7 @@ pub mod sort {
 
     // use super::super::messages::error_messages;
     use chrono::{DateTime, TimeZone, Utc, Local};
-    use crate::{error_messages, messages::ProgressBar, structs::File};
+    use crate::{error_messages, messages::ProgressBar, structs::{ConfigData, File}};
     use std::{fs, path::Path, time::UNIX_EPOCH};
     use walkdir::WalkDir;
 
@@ -338,6 +338,40 @@ pub mod sort {
         }
         progress_bar.complete();
         println!("Sucessfully sorted {} items by date into {}.", items_sorted, target.to_string());
+    }
+
+    pub fn sort_from_json(json: String) {
+        // Sort according to configuration data in json string JSON
+
+        // Get the json data
+        let data = ConfigData::from_json(&json);
+
+        // Make sure that the directories actually exist
+        let source = File::new(&data.source.as_str());
+        let target = File::new(&data.target.as_str());
+        let mut errors = false;
+        if !source.exists() {
+            println!("{}", error_messages::PathDoesNotExistError { path: &source }.to_string());
+            errors = true;
+        }
+        if !target.exists() {
+            println!("{}", error_messages::PathDoesNotExistError { path: &target }.to_string());
+            errors = true;
+        }
+        if errors { return }
+
+        // Run the sorting algorithm with the data
+        let exclude_type: (&str, bool) = (&data.exclude_type.join("-"), data.exclude_type.len() > 0);
+        let only_type: (&str, bool) = (&data.exclude_type.join("-"), data.exclude_type.len() > 0);
+        sort(
+            &source,
+            &target,
+            data.date_format.as_str(),
+            data.date_type.as_str(),
+            &data.preserve_name,
+            exclude_type,
+            only_type,
+        )
     }
 }
 
