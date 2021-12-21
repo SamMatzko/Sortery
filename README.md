@@ -22,6 +22,12 @@ directory, you will have to install it again.
     <a href="https://crates.io/crates/colored">Colored 2.0.0</a>
   </li>
   <li>
+    <a href="https://create.io/crates/serde">Serde 1.0 with features: derive</a>
+  </li>
+  <li>
+    <a href="https://crates.io/crates/serde_json">Serde JSON 1.0</a>
+  </li>
+  <li>
     <a href="https://crates.io/crates/walkdir">Walkdir 2.3.2</a>
   </li>
 </ul>
