@@ -68,7 +68,7 @@ fn main() {
     */
 
     // The variable telling whether we need to exit because of an error
-    let exit_for_error = false;
+    let mut exit_for_error = false;
 
     // The source and target directories
     let source = File::new(matches.value_of("SOURCE").unwrap());
@@ -78,9 +78,11 @@ fn main() {
     // if they don't exist
     if !source.exists() {
         println!("{}", error_messages::PathDoesNotExistError { path: &source }.to_string());
+        exit_for_error = true;
     }
     if !target.exists() {
         println!("{}", error_messages::PathDoesNotExistError { path: &target }.to_string());
+        exit_for_error = true;
     }
 
     // Exit if there were any errors
