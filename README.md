@@ -1,6 +1,6 @@
 <h1>Sortery</h1>
 
-[Sortery](https://github.com/SamMatzko/Sortery) is a basic command-line file sortor for Linux, written in [Rust](https://github.com/rust-lang/rust). It can be compiled using [Cargo](https://github.com/rust-lang/cargo). To get help on using Sortery, simply run `sortery -h` or `sortery --help`.
+[Sortery](https://github.com/SamMatzko/Sortery) is a basic command-line file sortor for Linux, written in [Rust](https://github.com/rust-lang/rust). It can be compiled using [Cargo](https://github.com/rust-lang/cargo). To get help on using Sortery, simply run `sortery -h` or `sortery --help`, or see the [Sortery Wiki](https://github.com/SamMatzko/Sortery/wiki).
 
 <h2>Installation</h2>
 
