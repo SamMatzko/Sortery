@@ -106,7 +106,7 @@ fn main() {
     
     // Run the commands
     if matches.is_present("extract") {
-        tools::extract(&source, &target);
+        tools::extract(&source, &target, matches.is_present("dry-run"));
     } else if matches.is_present("sort") {
 
         // The sub-command matches

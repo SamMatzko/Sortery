@@ -1,5 +1,5 @@
 use crate::structs::File;
-use super::messages::{error_messages, ProgressBar};
+use super::messages::{error_messages, DryRunMessage, ProgressBar};
 use std::fs;
 
 // Various sorting algorithms
@@ -430,11 +430,31 @@ pub mod sort {
     }
 }
 
-pub fn extract(source: &File, target: &File) {
+pub fn extract(source: &File, target: &File, dry_run: bool) {
     // Extract the contents of SOURCE to TARGET
 
     // The number of items we have moved
     let mut items_moved = 0;
+
+    // Make a dry run, if specified
+    if dry_run {
+        for entry in source.pathbuf.as_path().read_dir().expect("Failed to read dir.") {
+
+            // The entry path
+            let entry = entry.expect("Failed to get dir entry.");
+            let old_path = File::from_pathbuf(&entry.path());
+
+            // Calculate the new path for the entry
+            let new_path = target.join_string(&old_path.file_name());
+
+            // Make sure that the path being moved is not the source or target
+            if &old_path == source || &old_path == target { continue }
+
+            // Show the output of the dry run
+            println!("{}", DryRunMessage { from_file: old_path, to_file: new_path }.to_string());
+        }
+        return;
+    }
 
     // Count the number of items we are going to move
     let mut items_to_move = 0;
