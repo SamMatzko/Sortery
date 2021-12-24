@@ -16,7 +16,7 @@ fn main() {
 
     // Get the command-line arguments using clap::App
     let matches = App::new("Sortery")
-                        .version("1.3.2")
+                        .version("1.4.2")
                         .author("Samuel Matzko")
                         .about(about)
                         .arg(Arg::with_name("SOURCE")
