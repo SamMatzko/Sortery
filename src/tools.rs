@@ -145,11 +145,6 @@ pub mod sort {
         // Get the time of old_file and set the names of the directories
         let ctime = get_datetime(old_file, &date_type);
         let dir = target.join(Path::new(&ctime.format("%Y/%m/").to_string()));
-        
-        // Check if old_file's date dir exists, and if not create it
-        if !dir.exists() {
-            fs::create_dir_all(&dir.pathbuf.as_path()).expect("Failed to create dirs.");
-        }
 
         // Preserve the original file name, if we're supposed to.
         let mut name_to_preserve = String::from("");
@@ -284,7 +279,7 @@ pub mod sort {
         to_return
     }
 
-    pub fn sort(
+    pub fn sort_dry_run(
         source: &File,
         target: &File,
         date_format: &str,
@@ -292,7 +287,47 @@ pub mod sort {
         preserve_name: &bool,
         exclude_type: (&str, bool),
         only_type: (&str, bool)) {
+        // Show only the output of the intended sort, without acutally sorting
+
+        let results = get_sorting_results(
+            source,
+            target,
+            date_format,
+            date_type,
+            preserve_name,
+            exclude_type,
+            only_type
+        );
+
+        for i in 0..results.0 {
+            println!("Sorting {}\tto {}.", results.1[i].to_string(), results.2[i].to_string());
+        }
+    }
+
+    pub fn sort(
+        source: &File,
+        target: &File,
+        date_format: &str,
+        date_type: &str,
+        preserve_name: &bool,
+        exclude_type: (&str, bool),
+        only_type: (&str, bool),
+        dry_run: bool) {
         // Sort the files using the sorting algorithms
+
+        // Do a dry run, if specified
+        if dry_run {
+            sort_dry_run(
+                source,
+                target,
+                date_format,
+                date_type,
+                preserve_name,
+                exclude_type,
+                only_type
+            );
+            return;
+        }
 
         // The results of the sorting algorithm
         let results = get_sorting_results(
@@ -324,6 +359,12 @@ pub mod sort {
             let old_file = old.pathbuf.as_path();
             let new_file = new.pathbuf.as_path();
 
+            // Create the directory for the file, if it doesn't exist already
+            let dir = new_file.parent().expect("Failed to get parent dir.");
+            if !dir.exists() {
+                fs::create_dir_all(&dir).expect("Failed to create dirs.");
+            }
+
             // Rename the file
             fs::rename(&old_file, &new_file).expect(
                 &error_messages::PathMoveFailedError {
@@ -340,7 +381,7 @@ pub mod sort {
         println!("Sucessfully sorted {} items by date into {}.", items_sorted, target.to_string());
     }
 
-    pub fn sort_from_json(json: String, source: File, target: File) {
+    pub fn sort_from_json(json: String, source: File, target: File, dry_run: bool) {
         // Sort according to configuration data in json string JSON
 
         // Get the json data
@@ -358,18 +399,31 @@ pub mod sort {
         }
         if errors { return }
 
-        // Run the sorting algorithm with the data
+        // Run the sorting algorithm with the data, doing a dry run if specified
         let exclude_type: (&str, bool) = (&data.exclude_type.join("-"), data.exclude_type.len() > 0);
         let only_type: (&str, bool) = (&data.only_type.join("-"), data.only_type.len() > 0);
-        sort(
-            &source,
-            &target,
-            data.date_format.as_str(),
-            data.date_type.as_str(),
-            &data.preserve_name,
-            exclude_type,
-            only_type,
-        )
+        if dry_run {
+            sort_dry_run(
+                &source,
+                &target,
+                data.date_format.as_str(),
+                data.date_type.as_str(),
+                &data.preserve_name,
+                exclude_type,
+                only_type
+            );
+        } else {
+            sort(
+                &source,
+                &target,
+                data.date_format.as_str(),
+                data.date_type.as_str(),
+                &data.preserve_name,
+                exclude_type,
+                only_type,
+                false
+            )
+        }
     }
 }
 

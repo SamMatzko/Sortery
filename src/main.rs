@@ -36,6 +36,10 @@ fn main() {
                             .short("e")
                             .long("extract")
                             .help(extract_help))
+                        .arg(Arg::with_name("dry-run")
+                            .short("d")
+                            .long("dry-run")
+                            .help("Show the intended sort, without actually sorting."))
                         .subcommand(SubCommand::with_name("sort")
                             .about("Advanced sorting options.")
                             .arg(Arg::with_name("preserve-name")
@@ -94,7 +98,8 @@ fn main() {
             fs::read_to_string(matches.value_of("config-file").unwrap())
                 .expect("Failed to read config file."),
             source,
-            target
+            target,
+            matches.is_present("dry-run")
         );
         return;
     }
@@ -121,7 +126,7 @@ fn main() {
             sub_matches.is_present("only-type")
         );
 
-        // Run the sort tool
+        // Run the sort tool, or dry run if commanded
         tools::sort::sort(
             &source,
             &target,
@@ -129,7 +134,8 @@ fn main() {
             &date_type,
             &preserve_name,
             exclude_type,
-            only_type
+            only_type,
+            matches.is_present("dry-run")
         );
     }
 }
