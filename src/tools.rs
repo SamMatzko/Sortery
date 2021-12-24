@@ -7,7 +7,7 @@ pub mod sort {
 
     // use super::super::messages::error_messages;
     use chrono::{DateTime, TimeZone, Utc, Local};
-    use crate::{error_messages, messages::ProgressBar, structs::{ConfigData, File}};
+    use crate::{error_messages, messages::{DryRunMessage, ProgressBar}, structs::{ConfigData, File}};
     use std::{fs, path::Path, time::UNIX_EPOCH};
     use walkdir::WalkDir;
 
@@ -300,7 +300,10 @@ pub mod sort {
         );
 
         for i in 0..results.0 {
-            println!("Sorting {}\tto {}.", results.1[i].to_string(), results.2[i].to_string());
+            println!("{}", DryRunMessage {
+                from_file: results.1[i].copy(),
+                to_file: results.2[i].copy(),
+            }.to_string());
         }
     }
 

@@ -1,4 +1,21 @@
+use colored::Colorize;
+use crate::structs::File;
 use std::{io, io::Write};
+
+// The highlighted message for dry-run output
+pub struct DryRunMessage {
+    pub from_file: File,
+    pub to_file: File,
+}
+impl DryRunMessage {
+    pub fn to_string(&self) -> String {
+        String::from(format!(
+            "Sorting {} to {}.",
+            format!("{}", self.from_file.to_string()).green(),
+            format!("{}", self.to_file.to_string()).red()
+        ))
+    }
+}
 
 // The progress bar used when sorting
 pub struct ProgressBar {
