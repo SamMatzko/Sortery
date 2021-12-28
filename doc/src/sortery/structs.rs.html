@@ -161,20 +161,22 @@
 <span id="161">161</span>
 <span id="162">162</span>
 <span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
 </pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 <span class="kw">use</span> <span class="ident">std::path</span>::{<span class="ident">Path</span>, <span class="ident">PathBuf</span>};
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
+<span class="doccomment">/// Tests for the structs. Each test is named after the function and/or struct</span>
+<span class="doccomment">/// it tests, prefixed with test.</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
-    <span class="comment">// Tests for the structs. Each test is named after the function and/or struct</span>
-    <span class="comment">// it tests, prefixed with test.</span>
 
     <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">env</span>, <span class="ident">fs</span>, <span class="ident">path::Path</span>};
     <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">ConfigData</span>, <span class="ident">File</span>};
     
     <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="doccomment">/// Test the [`ConfigData`] struct</span>
     <span class="kw">fn</span> <span class="ident">test_configdata</span>() {
-        <span class="comment">// Test the ConfigData struct</span>
         
         <span class="comment">// Read the json string from template.json</span>
         <span class="kw">let</span> <span class="ident">current_dir</span> <span class="op">=</span> <span class="ident">env::current_dir</span>().<span class="ident">expect</span>(<span class="string">&quot;Failed to get current dir.&quot;</span>);
@@ -194,8 +196,8 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="comment">// Test the [`File`] struct</span>
     <span class="kw">fn</span> <span class="ident">test_file</span>() {
-        <span class="comment">// Test the File struct</span>
 
         <span class="comment">// The variables used for testing</span>
         <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">Path::new</span>(<span class="string">&quot;my_file.txt&quot;</span>);
@@ -218,7 +220,7 @@
     }
 }
 
-<span class="comment">// The struct used for getting the config data from a json file</span>
+<span class="doccomment">/// The struct used for getting the config data from a json file</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ConfigData</span> {
@@ -229,8 +231,9 @@
     <span class="kw">pub</span> <span class="ident">preserve_name</span>: <span class="ident">bool</span>
 }
 <span class="kw">impl</span> <span class="ident">ConfigData</span> {
+
+    <span class="doccomment">/// Return an instance of ConfigData from the data in [`String`] `json`.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_json</span>(<span class="ident">json</span>: <span class="kw-2">&amp;</span><span class="ident">String</span>) -&gt; <span class="ident">ConfigData</span> {
-        <span class="comment">// Return an instance of ConfigData from the data in JSON</span>
 
         <span class="kw">let</span> <span class="ident">json_data</span>: <span class="ident">ConfigData</span> <span class="op">=</span> <span class="ident">serde_json::from_str</span>(<span class="ident">json</span>.<span class="ident">as_str</span>()).<span class="ident">expect</span>(<span class="string">&quot;Failed to parse json.&quot;</span>);
 
@@ -244,30 +247,31 @@
     }
 }
 
-<span class="comment">// The struct used in all the cross-function path functionality</span>
+<span class="doccomment">/// The struct used in all the cross-function path functionality</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">File</span> {
     <span class="kw">pub</span> <span class="ident">pathbuf</span>: <span class="ident">PathBuf</span>,
 }
 <span class="kw">impl</span> <span class="ident">File</span> {
+
+    <span class="doccomment">/// Return an instance of File with the same path as ours</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">copy</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">File</span> {
-        <span class="comment">// Return an instance of File with the same path as ours</span>
         <span class="ident">File</span> { <span class="ident">pathbuf</span>: <span class="ident">PathBuf::from</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">pathbuf</span>) }
     }
 
+    <span class="doccomment">/// Return a new instance of [`File`], with `path` as the path.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_path</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) -&gt; <span class="ident">File</span> {
-        <span class="comment">// Return a new instance of File, with PATH as the path</span>
         <span class="ident">File</span> { <span class="ident">pathbuf</span>: <span class="ident">path</span>.<span class="ident">to_path_buf</span>() }
     }
 
+    <span class="doccomment">/// Return a new instance of [`File`], with `path` as the path.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_pathbuf</span>(<span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">PathBuf</span>) -&gt; <span class="ident">File</span> {
-        <span class="comment">// Return a new instance of File, with PATH as the path</span>
         <span class="ident">File</span> { <span class="ident">pathbuf</span>: <span class="ident">path</span>.<span class="ident">to_path_buf</span>() }
     }
 
+    <span class="doccomment">/// Return [`true`] if our path exists</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">exists</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="comment">// Return true if this path exists</span>
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">pathbuf</span>.<span class="ident">exists</span>() {
             <span class="kw">return</span> <span class="bool-val">true</span>;
         } <span class="kw">else</span> {
@@ -275,52 +279,52 @@
         }
     }
 
+    <span class="doccomment">/// Return a [`String`] representing the extension of our path</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">extension</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span> {
-        <span class="comment">// Return a string representing the extension of the path</span>
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">pathbuf</span>.<span class="ident">as_path</span>().<span class="ident">extension</span>() {
             <span class="prelude-val">None</span> =&gt; <span class="kw">return</span> <span class="ident">String::from</span>(<span class="string">&quot;&quot;</span>),
             <span class="ident">s</span> =&gt; <span class="kw">return</span> <span class="ident">String::from</span>(<span class="ident">s</span>.<span class="ident">unwrap</span>().<span class="ident">to_str</span>().<span class="ident">unwrap</span>()),
         }
     }
 
+    <span class="doccomment">/// Return the file name of our path</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">file_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span> {
-        <span class="comment">// Return the file name of our path</span>
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">pathbuf</span>.<span class="ident">as_path</span>().<span class="ident">file_name</span>() {
             <span class="prelude-val">None</span> =&gt; <span class="kw">return</span> <span class="ident">String::from</span>(<span class="string">&quot;&quot;</span>),
             <span class="ident">s</span> =&gt; <span class="kw">return</span> <span class="ident">String::from</span>(<span class="ident">s</span>.<span class="ident">unwrap</span>().<span class="ident">to_str</span>().<span class="ident">unwrap</span>()),
         }
     }
 
+    <span class="doccomment">/// Return a [`String`] representing the file stem of our path</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">file_stem</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span> {
-        <span class="comment">// Return a string representing the file stem of the path</span>
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">pathbuf</span>.<span class="ident">as_path</span>().<span class="ident">file_stem</span>() {
             <span class="prelude-val">None</span> =&gt; <span class="kw">return</span> <span class="ident">String::from</span>(<span class="string">&quot;&quot;</span>),
             <span class="ident">s</span> =&gt; <span class="kw">return</span> <span class="ident">String::from</span>(<span class="ident">s</span>.<span class="ident">unwrap</span>().<span class="ident">to_str</span>().<span class="ident">unwrap</span>()),
         }
     }
 
+    <span class="doccomment">/// Return the joining of our path and `path` as a [`File`].</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">join</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) -&gt; <span class="ident">File</span> {
-        <span class="comment">// Return the joining of this path and PATH</span>
         <span class="ident">File</span> { <span class="ident">pathbuf</span>: <span class="self">self</span>.<span class="ident">pathbuf</span>.<span class="ident">join</span>(<span class="ident">path</span>) }
     }
 
+    <span class="doccomment">/// Return the joining of our path and `path`.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">join_string</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">String</span>) -&gt; <span class="ident">File</span> {
-        <span class="comment">// Return the joining of this path and PATH</span>
         <span class="ident">File</span> { <span class="ident">pathbuf</span>: <span class="self">self</span>.<span class="ident">pathbuf</span>.<span class="ident">join</span>(<span class="ident">Path::new</span>(<span class="ident">path</span>)) }
     }
 
+    <span class="doccomment">/// Return a new instance of [`File`] from `from`</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">from</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">File</span> {
-        <span class="comment">// Return a new instance of File from FROM</span>
         <span class="ident">File</span> { <span class="ident">pathbuf</span>: <span class="ident">PathBuf::from</span>(<span class="ident">from</span>) }
     }
 
+    <span class="doccomment">/// Return an instance of [`PathBuf`] representing our path</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_path_buf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">PathBuf</span> {
-        <span class="comment">// Return an instance of PathBuf representing our path</span>
         <span class="ident">PathBuf::from</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">pathbuf</span>)
     }
     
+    <span class="doccomment">/// Return a [`String`] representing our path</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_string</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span> {
-        <span class="comment">// Return a string representing the path</span>
         <span class="self">self</span>.<span class="ident">pathbuf</span>.<span class="ident">display</span>().<span class="ident">to_string</span>()
     }
 }</code></pre></div>
