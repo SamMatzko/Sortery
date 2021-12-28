@@ -1,3 +1,7 @@
+//! Sortery is a simple, fast command-line file sorter for Linux.
+//! You can find the GitHib repo at <https://github.com/SamMatzko/Sortery>, and the
+//! Sortery Wiki at <https://github.com/SamMatzko/Sortery/wiki>.
+
 mod messages;
 mod structs;
 mod tools;
@@ -7,6 +11,7 @@ use messages::error_messages;
 use std::fs;
 use structs::File;
 
+/// Run the whole Sortery application, including the cli.
 fn main() {
 
     // Some of the text used in the app creation

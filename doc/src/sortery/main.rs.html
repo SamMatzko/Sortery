@@ -141,7 +141,16 @@
 <span id="141">141</span>
 <span id="142">142</span>
 <span id="143">143</span>
-</pre><pre class="rust"><code><span class="kw">mod</span> <span class="ident">messages</span>;
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Sortery is a simple, fast command-line file sorter for Linux.</span>
+<span class="doccomment">//! You can find the GitHib repo at &lt;https://github.com/SamMatzko/Sortery&gt;, and the</span>
+<span class="doccomment">//! Sortery Wiki at &lt;https://github.com/SamMatzko/Sortery/wiki&gt;.</span>
+
+<span class="kw">mod</span> <span class="ident">messages</span>;
 <span class="kw">mod</span> <span class="ident">structs</span>;
 <span class="kw">mod</span> <span class="ident">tools</span>;
 
@@ -150,6 +159,7 @@
 <span class="kw">use</span> <span class="ident">std::fs</span>;
 <span class="kw">use</span> <span class="ident">structs::File</span>;
 
+<span class="doccomment">/// Run the whole Sortery application, including the cli.</span>
 <span class="kw">fn</span> <span class="ident">main</span>() {
 
     <span class="comment">// Some of the text used in the app creation</span>
