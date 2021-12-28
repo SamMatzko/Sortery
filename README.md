@@ -32,6 +32,10 @@ directory, you will have to install it again.
   </li>
 </ul>
 
+<h2>Documentation</h2>
+
+HTML documentation for the Sortery source code can be found at [docs/doc/sortery/index.html](docs/doc/sortery/index.html).
+
 <h2>License</h2>
 
 [MIT](https://github.com/SamMatzko/Sortery/blob/master/LICENSE-MIT.txt)
