@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["ConfigData","The struct used for getting the config data from a json file"],["File","The struct used in all the cross-function path functionality"]]});

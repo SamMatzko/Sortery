@@ -1,5 +1,5 @@
 /target
 /.vscode
-/docs/debug
-/docs/.rustc_info.json
-/docs/.rustdoc_fingerprint.json
+/debug
+/.rustc_info.json
+/.rustdoc_fingerprint.json

@@ -34,7 +34,7 @@ directory, you will have to install it again.
 
 <h2>Documentation</h2>
 
-HTML documentation for the Sortery source code can be found at [docs/doc/sortery/index.html](docs/doc/sortery/index.html).
+HTML documentation for the Sortery source code can be found at [doc/sortery/index.html](doc/sortery/index.html).
 
 <h2>License</h2>
 

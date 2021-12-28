@@ -2,16 +2,16 @@ use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 
 #[cfg(test)]
+/// Tests for the structs. Each test is named after the function and/or struct
+/// it tests, prefixed with test.
 mod tests {
-    // Tests for the structs. Each test is named after the function and/or struct
-    // it tests, prefixed with test.
 
     use std::{env, fs, path::Path};
     use super::{ConfigData, File};
     
     #[test]
+    /// Test the [`ConfigData`] struct
     fn test_configdata() {
-        // Test the ConfigData struct
         
         // Read the json string from template.json
         let current_dir = env::current_dir().expect("Failed to get current dir.");
@@ -31,8 +31,8 @@ mod tests {
     }
 
     #[test]
+    /// Test the [`File`] struct
     fn test_file() {
-        // Test the File struct
 
         // The variables used for testing
         let path = Path::new("my_file.txt");
@@ -55,7 +55,7 @@ mod tests {
     }
 }
 
-// The struct used for getting the config data from a json file
+/// The struct used for getting the config data from a json file
 #[derive(Debug)]
 #[derive(Serialize, Deserialize)]
 pub struct ConfigData {
@@ -66,8 +66,9 @@ pub struct ConfigData {
     pub preserve_name: bool
 }
 impl ConfigData {
+
+    /// Return an instance of ConfigData from the data in [`String`] `json`.
     pub fn from_json(json: &String) -> ConfigData {
-        // Return an instance of ConfigData from the data in JSON
 
         let json_data: ConfigData = serde_json::from_str(json.as_str()).expect("Failed to parse json.");
 
@@ -81,30 +82,31 @@ impl ConfigData {
     }
 }
 
-// The struct used in all the cross-function path functionality
+/// The struct used in all the cross-function path functionality
 #[derive(Debug)]
 #[derive(PartialEq)]
 pub struct File {
     pub pathbuf: PathBuf,
 }
 impl File {
+
+    /// Return an instance of File with the same path as ours
     pub fn copy(&self) -> File {
-        // Return an instance of File with the same path as ours
         File { pathbuf: PathBuf::from(&self.pathbuf) }
     }
 
+    /// Return a new instance of [`File`], with `path` as the path.
     pub fn from_path(path: &Path) -> File {
-        // Return a new instance of File, with PATH as the path
         File { pathbuf: path.to_path_buf() }
     }
 
+    /// Return a new instance of [`File`], with `path` as the path.
     pub fn from_pathbuf(path: &PathBuf) -> File {
-        // Return a new instance of File, with PATH as the path
         File { pathbuf: path.to_path_buf() }
     }
 
+    /// Return [`true`] if our path exists
     pub fn exists(&self) -> bool {
-        // Return true if this path exists
         if self.pathbuf.exists() {
             return true;
         } else {
@@ -112,52 +114,52 @@ impl File {
         }
     }
 
+    /// Return a [`String`] representing the extension of our path
     pub fn extension(&self) -> String {
-        // Return a string representing the extension of the path
         match self.pathbuf.as_path().extension() {
             None => return String::from(""),
             s => return String::from(s.unwrap().to_str().unwrap()),
         }
     }
 
+    /// Return the file name of our path
     pub fn file_name(&self) -> String {
-        // Return the file name of our path
         match self.pathbuf.as_path().file_name() {
             None => return String::from(""),
             s => return String::from(s.unwrap().to_str().unwrap()),
         }
     }
 
+    /// Return a [`String`] representing the file stem of our path
     pub fn file_stem(&self) -> String {
-        // Return a string representing the file stem of the path
         match self.pathbuf.as_path().file_stem() {
             None => return String::from(""),
             s => return String::from(s.unwrap().to_str().unwrap()),
         }
     }
 
+    /// Return the joining of our path and `path` as a [`File`].
     pub fn join(&self, path: &Path) -> File {
-        // Return the joining of this path and PATH
         File { pathbuf: self.pathbuf.join(path) }
     }
 
+    /// Return the joining of our path and `path`.
     pub fn join_string(&self, path: &String) -> File {
-        // Return the joining of this path and PATH
         File { pathbuf: self.pathbuf.join(Path::new(path)) }
     }
 
+    /// Return a new instance of [`File`] from `from`
     pub fn new(from: &str) -> File {
-        // Return a new instance of File from FROM
         File { pathbuf: PathBuf::from(from) }
     }
 
+    /// Return an instance of [`PathBuf`] representing our path
     pub fn to_path_buf(&self) -> PathBuf {
-        // Return an instance of PathBuf representing our path
         PathBuf::from(&self.pathbuf)
     }
     
+    /// Return a [`String`] representing our path
     pub fn to_string(&self) -> String {
-        // Return a string representing the path
         self.pathbuf.display().to_string()
     }
 }
