@@ -1,8 +1,11 @@
+//! All the sorting tools used by the command-line interface. Contains the main 
+//! sorting algorithm.
+
 use crate::structs::File;
 use super::messages::{error_messages, DryRunMessage, ProgressBar};
 use std::fs;
 
-// Various sorting algorithms
+/// The main sorting algorithm, and all the functions it needs to operate.
 pub mod sort {
 
     // use super::super::messages::error_messages;
@@ -13,8 +16,8 @@ pub mod sort {
 
     #[cfg(test)]
     mod tests {
-        // Tests for tools. Each test function is named after the function in
-        // tools it tests, with the test_ prefix.
+        /// Tests for tools. Each test function is named after the function in
+        /// tools it tests, with the test_ prefix.
 
         use std::{env, path::Path};
         use super::*;
@@ -87,37 +90,40 @@ pub mod sort {
             assert!(is_type(&path, &"txt"));
         }
     }
-
+    
+    /// Return the access date and time of `path` as the number of seconds since the
+    /// UNIX epoch.
     fn get_epoch_secs_access(path: &File) -> i64 {
-        // Return the access date and time as the number of seconds since the
-        // UNIX epoch.
         let ctime_system = path.pathbuf.metadata().unwrap().accessed().expect("Failed to get atime");
         let secs: i64 = ctime_system.duration_since(UNIX_EPOCH).unwrap().as_secs() as i64;
 
         secs
     }
-
+    
+    /// Return the creation date and time of `path` as the number of seconds since the
+    /// UNIX epoch.
     fn get_epoch_secs_creation(path: &File) -> i64 {
-        // Return the creation date and time as the number of seconds since the
-        // UNIX epoch.
         let ctime_system = path.pathbuf.metadata().unwrap().created().expect("Failed to get ctime");
         let secs: i64 = ctime_system.duration_since(UNIX_EPOCH).unwrap().as_secs() as i64;
 
         secs
     }
 
+    /// Return the modification date and time of `path` as the number of seconds since the
+    /// UNIX epoch.
     fn get_epoch_secs_modified(path: &File) -> i64 {
-        // Return the modification date and time as the number of seconds since the
-        // UNIX epoch.
         let ctime_system = path.pathbuf.metadata().unwrap().modified().expect("Failed to get mtime");
         let secs: i64 = ctime_system.duration_since(UNIX_EPOCH).unwrap().as_secs() as i64;
 
         secs
     }
 
+    /// Return a [`DateTime`] instance representing the creation, modification,
+    /// or access time of `path` according to `date_type`.
+    /// 
+    /// `date_type` must be one of `"c"` (created), `"a"` (accessed), or `"m"` (modified).
+    /// Note that creation time is not available on all filesystems.
     fn get_datetime(path: &File, date_type: &str) -> DateTime<Local> {
-        // Return a DateTime instance of the creation, modification, or access
-        // time of PATH according to DATE_TYPE.
         let secs: i64;
         if date_type == "m" {
             secs = get_epoch_secs_modified(path);
@@ -132,15 +138,17 @@ pub mod sort {
         mytime
     }
 
+    /// Move `file` into a set of directories in yyyy/mm/ format according to its
+    /// creation time. 
+    /// 
+    /// Create any required directories that don't already exist.
+    /// Also rename the file according to its creation date.
     fn get_new_date_path(
         target: &File,
         old_file: &File,
         date_format: &str,
         date_type: &str,
         preserve_name: bool) -> File {
-        // Move FILE into a set of directories in yyyy/mm/ format according to its
-        // creation time. Create any required directories that don't already exist.
-        // Also rename the file according to its creation date.
         
         // Get the time of old_file and set the names of the directories
         let ctime = get_datetime(old_file, &date_type);
@@ -166,13 +174,13 @@ pub mod sort {
         new_file
     }
 
+    
+    /// Return a [`File`] representing the renamed version of `path`.
+    /// 
+    /// This function is called only if `path` already exists, but can't/shouldn't
+    /// be replaced. The naming logic: if `/path/to/file` already exists, return
+    /// `/path/to/file_2`. If `/path/to/file_2` already exists, return `/path/to/file_3`, etc.
     fn get_sequential_name(path: &File, vec: &Vec<File>) -> File {
-        /*
-        Return a PathBuf representing the renamed version of PATH. This function is
-        called only if PATH already exists, but can't/shouldn't be replaced. The
-        naming system: if `/path/to/file` already exists, return `/path/to/file_2`.
-        If `/path/to/file_2` already exists, return `/path/to/file_3`, etc.
-        */
 
         let mut num = 2;
 
@@ -196,6 +204,67 @@ pub mod sort {
         }
     }
 
+    /// The main sorting algorithm; this checks files for validity and shows
+    /// the progress bar.
+    /// 
+    /// The parameters are as follows:
+    /// 
+    /// <ul>
+    /// <li>
+    /// 
+    /// `source` is the directory from which to get all the files to sort.
+    /// </li>
+    /// 
+    /// <li>
+    /// 
+    /// `target` is the directory into which to sort all the files.
+    /// </li>
+    /// 
+    /// <li>
+    /// 
+    /// `date_format` is the date *format* with which to rename the files. It shares
+    /// the formatting rules with the [`chrono::format::strftime`] module.
+    /// </li>
+    /// 
+    /// <li>
+    /// 
+    /// `date_type` is the date to sort the files by; one of `"c"` (created),
+    /// `"a"` (accessed), or `"m"` modified. Note that creation time is not
+    /// available on all filesystems.
+    /// </li>
+    /// 
+    /// <li>
+    /// 
+    /// `preserve_name`, if set to [`true`], will add the original filename after
+    /// the date, separated by a space. For example, sorting a file `test.txt` with
+    /// `preserve_name=true` will rename `test.txt` to `2021-04-21 06h34m02s test.txt`
+    /// </li>
+    /// 
+    /// <li>
+    /// 
+    /// `exclude_type` is a [`tuple`] containing two items. One is a [`str`] representing
+    /// the extension of a file type to exclude from sorting. For example, if
+    /// `"jpg"` is passed, all files ending in `.jpg` will be ignored during sorting.
+    /// The other item is a [`bool`] telling whether `exclude_type` should take effect
+    /// or not.
+    /// </li>
+    /// 
+    /// <li>
+    /// 
+    /// `only_type` is [`tuple`] containing two items. One is a [`str`] representing
+    /// the extension of a file type to exclusively sort. For example, if `"jpg"`
+    /// is passed, *only* files ending in `.jpg` will be sorted; all others will be
+    /// ignored. Overrides the `exclude_type` option. The other item is a [`bool`]
+    /// telling whether `only_type` shoud take effect or not.
+    /// </li>
+    /// </ul>
+    /// 
+    /// This returns a three-item tuple containing: a [`usize`] representing the
+    /// number of items to be sorted, a [`Vec<File>`] of the old file names, and
+    /// a [`Vec<File>`] of the new file names. Each item in the old file names
+    /// corresponds with the item of the same index in the new file names. So
+    /// `old_names[0]` will be renamed to `new_names[0]`, `old_names[1]` will be
+    /// renamed to `new_names[1]`, etc.
     fn get_sorting_results(
         source: &File,
         target: &File,
@@ -204,8 +273,6 @@ pub mod sort {
         preserve_name: &bool,
         exclude_type: (&str, bool),
         only_type: (&str, bool)) -> (usize, Vec<File>, Vec<File>) {
-        // The main sorting algorithm; this checks files for validity and shows
-        // the progress bar.
 
         // The vector to return: a tuple of (old_filename, new_filename)
         let mut vec_old: Vec<File> = Vec::new();
@@ -251,13 +318,15 @@ pub mod sort {
         }
         (items_to_sort, vec_old, vec_new)
     }
-
+    
+    /// Return [`true`] if:
+    /// 1) `path`'s type is in `only_type.0` and `only_type.1` is [`true`]
+    /// 2) `path`'s type is not in `exclude_type.0`, and `only_type.1` is [`false`]
+    /// 
+    /// "Type" refers to the file extension, as in `"jpg"`, `"png"`, etc. `exclude_type`
+    /// and `only_type` correspond with `exclude_type` and `only_type` in [`get_sorting_results`],
+    /// respectively.
     fn is_sortable(path: &File, exclude_type: &(&str, bool), only_type: &(&str, bool)) -> bool {
-        /*
-        Return true if:
-        1) PATH's type is in only_type.0 and only_type.1 is true
-        2) PATH's type is not in exclude_type.0, and only_type.1 is false
-        */
 
         if is_type(path, only_type.0) && only_type.1 {
             return true;
@@ -268,8 +337,9 @@ pub mod sort {
         }
     }
 
+    /// Return [`true`] if `path`'s type is one of the types in `types`.
+    /// "Type" refers to the file extension, as in `"jpg"`, `"png"`, etc.
     fn is_type(path: &File, types: &str) -> bool {
-        // Return true if PATH's type is one of the types in TYPES.
         let mut to_return: bool = false;
         for t in types.split("-") {
             if path.extension() == t {
@@ -279,6 +349,8 @@ pub mod sort {
         to_return
     }
 
+    /// Print the intended sort, without acutally sorting. Each parameter
+    /// corresponds with the parameter in [`get_sorting_results`] with the same name.
     pub fn sort_dry_run(
         source: &File,
         target: &File,
@@ -287,7 +359,6 @@ pub mod sort {
         preserve_name: &bool,
         exclude_type: (&str, bool),
         only_type: (&str, bool)) {
-        // Show only the output of the intended sort, without acutally sorting
 
         let results = get_sorting_results(
             source,
@@ -307,6 +378,11 @@ pub mod sort {
         }
     }
 
+    /// The main sort function used by the command-line interface. Each parameter
+    /// corresponds with the parameter in [`get_sorting_results`] of the same name,
+    /// with the exception of `dry_run`.
+    /// 
+    /// If `dry_run` is [`true`], will print the intended sort without acutally sorting.
     pub fn sort(
         source: &File,
         target: &File,
@@ -316,7 +392,6 @@ pub mod sort {
         exclude_type: (&str, bool),
         only_type: (&str, bool),
         dry_run: bool) {
-        // Sort the files using the sorting algorithms
 
         // Do a dry run, if specified
         if dry_run {
@@ -384,8 +459,12 @@ pub mod sort {
         println!("Sucessfully sorted {} items by date into {}.", items_sorted, target.to_string());
     }
 
+    /// Sort according to configuration data in JSON [`String`] `json`. `source`
+    /// and `target` correspond with the same-name parameters in [`get_sorting_results`].
+    /// See [`crate::structs::ConfigData`] for more information on JSON configuration.
+    /// 
+    /// If `dry_run` is [`true`], will print the intended sort without acutally sorting.
     pub fn sort_from_json(json: String, source: File, target: File, dry_run: bool) {
-        // Sort according to configuration data in json string JSON
 
         // Get the json data
         let data = ConfigData::from_json(&json);
@@ -430,8 +509,9 @@ pub mod sort {
     }
 }
 
+/// Move all the contents of SOURCE to TARGET, maintaining subdirectory structure.
+/// If `dry_run` is [`true`], will print the intended sort without acutally sorting.
 pub fn extract(source: &File, target: &File, dry_run: bool) {
-    // Extract the contents of SOURCE to TARGET
 
     // The number of items we have moved
     let mut items_moved = 0;
