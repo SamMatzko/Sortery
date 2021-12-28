@@ -10,7 +10,9 @@ use structs::File;
 fn main() {
 
     // Some of the text used in the app creation
-    let about = "Sortery is a simple, fast command-line file sorter for Linux.";
+    let about = "\nSortery is a simple, fast command-line file sorter for Linux. \
+You can find the GitHib repo at <https://github.com/SamMatzko/Sortery>, and the \
+Sortery Wiki at <https://github.com/SamMatzko/Sortery/wiki>.";
     let config_help = "Path to a JSON file with configuration information. Use template.json as a template.";
     let extract_help = "Move all files and directories from SOURCE to TARGET";
 
