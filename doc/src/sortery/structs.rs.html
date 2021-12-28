@@ -163,7 +163,11 @@
 <span id="163">163</span>
 <span id="164">164</span>
 <span id="165">165</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
+<span id="166">166</span>
+<span id="167">167</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Commonly-used structs that multiple modules use.</span>
+
+<span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Serialize</span>};
 <span class="kw">use</span> <span class="ident">std::path</span>::{<span class="ident">Path</span>, <span class="ident">PathBuf</span>};
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
@@ -196,7 +200,7 @@
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
-    <span class="comment">// Test the [`File`] struct</span>
+    <span class="doccomment">/// Test the [`File`] struct</span>
     <span class="kw">fn</span> <span class="ident">test_file</span>() {
 
         <span class="comment">// The variables used for testing</span>

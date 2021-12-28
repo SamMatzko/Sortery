@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["PathDoesNotExistError",""],["PathMoveFailedError",""]]});
+initSidebarItems({"struct":[["PathDoesNotExistError","When the user inputs a file or directory that doesn’t exist. `path` is a [`File`] representing the path that does not exist."],["PathMoveFailedError","When an attemtped file rename fails. [`File`] `source` is the old file path, and [`File`] `target` is the path that `source` should have been renamed to."]]});

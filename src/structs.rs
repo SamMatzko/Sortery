@@ -1,3 +1,5 @@
+//! Commonly-used structs that multiple modules use.
+
 use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 

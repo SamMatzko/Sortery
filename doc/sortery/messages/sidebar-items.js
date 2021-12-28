@@ -1,1 +1,1 @@
-initSidebarItems({"mod":[["error_messages",""]],"struct":[["DryRunMessage",""],["ProgressBar",""]]});
+initSidebarItems({"mod":[["error_messages","Error message structs for common errors."]],"struct":[["DryRunMessage","The highlighted message for dry-run output."],["ProgressBar","The command-line progress bar used when sorting."]]});

@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["main",""]],"mod":[["messages",""],["structs",""],["tools","All the sorting tools used by the command-line interface. Contains the main  sorting algorithm."]]});
+initSidebarItems({"fn":[["main",""]],"mod":[["messages","The module containing all the commonly-used command-line messages."],["structs","Commonly-used structs that multiple modules use."],["tools","All the sorting tools used by the command-line interface. Contains the main  sorting algorithm."]]});
