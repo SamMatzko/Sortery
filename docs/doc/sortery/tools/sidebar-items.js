@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["extract","Move all the contents of SOURCE to TARGET, maintaining subdirectory structure. If `dry_run` is [`true`], will print the intended sort without acutally sorting."]],"mod":[["sort","The main sorting algorithm, and all the functions it needs to operate."]]});

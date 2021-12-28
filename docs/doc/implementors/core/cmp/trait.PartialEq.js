@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["sortery"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/1.57.0/core/cmp/trait.PartialEq.html\" title=\"trait core::cmp::PartialEq\">PartialEq</a>&lt;<a class=\"struct\" href=\"sortery/structs/struct.File.html\" title=\"struct sortery::structs::File\">File</a>&gt; for <a class=\"struct\" href=\"sortery/structs/struct.File.html\" title=\"struct sortery::structs::File\">File</a>","synthetic":false,"types":["sortery::structs::File"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
